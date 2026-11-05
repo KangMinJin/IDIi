@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<body>
+<header class="site-header" th:fragment="header">
+  <div class="header-inner">
+    <a class="brand" th:href="@{/}" aria-label="IDI 홈">IDI<span>!</span></a>
+    <nav class="header-actions" aria-label="사용자 메뉴">
+		<th:block th:if="${session.userId != null}">
+		    <a class="header-welcome" th:href="@{/user/profile}">내 정보 수정</a>
+
+		    <form th:action="@{/user/logout}" method="post">
+		        <button class="header-link" type="submit">로그아웃</button>
+		    </form>
+		</th:block>
+
+		<th:block th:unless="${session.userId != null}">
+		    <a class="header-link" th:href="@{/user/login}">로그인</a>
+		    <a class="btn btn-primary" th:href="@{/user/signup}">시작하기</a>
+		</th:block>
+    </nav>
+  </div>
+</header>
+</body>
+</html>

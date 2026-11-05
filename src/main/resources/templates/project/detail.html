@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${project.title} + ' | IDI!'">프로젝트 상세 | IDI!</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/project-detail.css}">
+  <link rel="stylesheet" th:href="@{/css/testcase.css}">
+  <style>
+    .inline-issue-select { max-width: 120px; padding: 6px 8px; border: 1px solid #e5e5f3;
+      border-radius: 8px; background: #f8f8ff; color: #303653; font: inherit;
+      font-size: 13px; cursor: pointer; }
+    .inline-issue-select:focus { outline: 2px solid #6865e8; outline-offset: 1px; }
+  </style>
+</head>
+<body>
+  <div th:replace="~{fragments/header :: header}"></div>
+
+  <div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <main class="dashboard-main project-detail-main">
+      <nav class="detail-breadcrumb" aria-label="현재 위치">
+        <a th:href="@{/}">내 프로젝트</a>
+        <span aria-hidden="true">›</span>
+        <span th:text="${project.title}">프로젝트 이름</span>
+      </nav>
+
+	  
+	  <div class="detail-title-row">
+
+	      <div>
+	          <div class="project-badge-group">
+	              <span class="eyebrow">PROJECT OVERVIEW</span>
+
+	              <!-- 완료된 프로젝트에서만 표시 -->
+	              <span class="project-role" th:if="${isCompleted}">
+	                  완료 · 읽기 전용
+	              </span>
+	          </div>
+
+	          <h1 th:text="${project.title}">프로젝트 이름</h1>
+	          <p>프로젝트 정보와 업무 현황을 확인하세요.</p>
+	      </div>
+
+	      <div class="detail-header-actions">
+
+	          <a class="btn btn-outline" th:href="@{/}">← 목록으로</a>
+
+	          <a class="btn btn-primary"
+	             th:if="${project.ownerId == session.userId}"
+	             th:href="@{/project/edit(projectId=${project.projectId})}">
+	              프로젝트 수정
+	          </a>
+
+	          <form th:if="${canManage}"
+	                th:action="@{/project/status}"
+	                method="post"
+	                onsubmit="return confirm('프로젝트 상태를 변경하시겠습니까?');">
+
+	              <input type="hidden" name="projectId" th:value="${project.projectId}">
+	              <input type="hidden" name="status" th:value="${isCompleted ? '0' : '1'}">
+
+	              <button class="btn btn-outline"
+	                      type="submit"
+	                      th:text="${isCompleted ? '프로젝트 재개' : '프로젝트 완료'}">
+	                  프로젝트 완료
+	              </button>
+
+	          </form>
+
+	      </div>
+
+	  </div>
+
+
+      <div class="detail-layout">
+
+        <!-- 프로젝트 소개 -->
+        <section class="dashboard-card detail-overview"
+                 aria-labelledby="overview-title">
+
+          <div class="card-heading">
+            <h2 id="overview-title">프로젝트 소개</h2>
+            <span class="project-role" th:text="${myRoleName}">역할</span>
+          </div>
+
+          <p class="detail-description"
+             th:text="${#strings.isEmpty(project.description) ? '아직 등록된 프로젝트 설명이 없습니다.' : project.description}">
+            프로젝트 설명
+          </p>
+
+          <div class="detail-divider"></div>
+
+          <h3 class="detail-subheading">프로젝트 일정</h3>
+
+          <div class="detail-date-grid">
+            <div class="detail-date-item">
+              <span>시작일</span>
+              <strong th:text="${project.startDate != null ? project.startDate : '미설정'}">
+                미설정
+              </strong>
+            </div>
+
+            <div class="detail-date-item">
+              <span>마감일</span>
+              <strong th:text="${project.dueDate != null ? project.dueDate : '미설정'}">
+                미설정
+              </strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- 프로젝트 정보 및 멤버 버튼을 같은 열에 묶어 간격 유지 -->
+        <div class="detail-right-column">
+        <!-- 프로젝트 정보 -->
+        <aside class="dashboard-card detail-summary"
+               aria-labelledby="summary-title">
+
+          <div class="card-heading">
+            <h2 id="summary-title">프로젝트 정보</h2>
+          </div>
+
+          <div class="detail-info-line">
+            <span>프로젝트 번호</span>
+            <strong th:text="${'#' + project.projectId}">#1</strong>
+          </div>
+
+          <div class="detail-info-line">
+            <span>내 역할</span>
+            <span th:text="${myRoleName}">역할</span>
+          </div>
+
+          <div class="detail-info-line">
+            <span>프로젝트 상태</span>
+            <strong th:text="${isCompleted ? '완료' : '진행 중'}">진행 중</strong>
+          </div>
+
+        </aside>
+        <div class="detail-member-slot">
+        <div class="member-popover-anchor" id="memberPopoverAnchor">
+          <button type="button" class="member-popover-trigger" id="memberPopoverTrigger"
+                  aria-expanded="false" aria-controls="memberPopoverPanel">
+            <span class="member-popover-label"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              프로젝트 멤버 <span class="member-popover-count" th:text="${memberList == null ? 0 : #lists.size(memberList)}">0</span></span>
+            <span class="member-popover-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div class="member-popover-panel" id="memberPopoverPanel" hidden>
+            <div class="member-popover-heading">
+              <strong>프로젝트 멤버</strong>
+              <button type="button" class="member-popover-add" th:if="${canManage and !isCompleted}"
+                      onclick="document.getElementById('memberPopoverPanel').hidden = true; document.getElementById('memberPopoverTrigger').setAttribute('aria-expanded','false'); document.getElementById('memberModal').showModal()">+ 멤버 추가</button>
+            </div>
+            <div class="member-popover-scroll">
+	      <div class="member-empty"
+	           th:if="${memberList == null or #lists.isEmpty(memberList)}">
+	          등록된 멤버가 없습니다.
+	      </div>
+
+	      <div class="member-list"
+	           th:if="${memberList != null and !#lists.isEmpty(memberList)}">
+
+	          <div class="member-row" th:each="member : ${memberList}">
+	              <div class="member-profile">
+	                  <strong th:text="${member.nickname}">닉네임</strong>
+	                  <span th:text="${member.email}">email@example.com</span>
+	              </div>
+
+	              <div class="member-actions">
+	                  <span class="member-role"
+	                        th:text="${member.role == '0' ? '관리자' : (member.role == '1' ? 'QA' : '개발자')}">
+	                      QA
+	                  </span>
+
+	                  <form th:if="${canManage and !isCompleted and member.userId != project.ownerId}"
+	                        th:action="@{/project/member/delete}" method="post"
+	                        onsubmit="return confirm('이 멤버를 삭제하시겠습니까?');">
+	                      <input type="hidden" name="projectId"
+	                             th:value="${project.projectId}">
+	                      <input type="hidden" name="memberId"
+	                             th:value="${member.memberId}">
+	                      <button type="submit" class="member-delete">삭제</button>
+	                  </form>
+	              </div>
+	          </div>
+	      </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        </div>
+      </div>
+	  
+      <!-- 프로젝트 업무 영역: 목록을 동시에 늘어놓지 않고 탭으로 전환 -->
+      <div class="work-tabs" role="tablist" aria-label="프로젝트 업무 목록">
+        <button type="button" id="issue-tab" class="work-tab is-active" role="tab"
+                aria-selected="true" aria-controls="issue-panel" data-work-tab="issue">
+          이슈 관리 <span class="work-tab-count" th:text="${issues == null ? 0 : #lists.size(issues)}">0</span>
+        </button>
+        <button type="button" id="tc-tab" class="work-tab" role="tab"
+                aria-selected="false" aria-controls="tc-panel" data-work-tab="tc" tabindex="-1">
+          테스트케이스 <span class="work-tab-count" th:text="${testCases == null ? 0 : #lists.size(testCases)}">0</span>
+        </button>
+      <!-- 프로젝트 목록 상단 오른쪽: 엑셀 다운로드 -->
+      
+        <a class="btn btn-excel-export" th:href="@{/project/excel(projectId=${project.projectId})}" aria-label="현재 프로젝트 엑셀 다운로드">엑셀 다운로드</a>
+      
+      </div>
+
+
+      <!-- 테스트 케이스: 이슈와 독립된 프로젝트별 목록 -->
+      <section id="tc-panel" class="dashboard-card detail-issues work-tab-panel" role="tabpanel" aria-labelledby="tc-tab" hidden>
+        <div class="card-heading detail-issues-heading"><div><h2 id="testcase-title">테스트 케이스</h2><p class="detail-section-caption">QA 테스트 결과를 프로젝트 멤버와 공유합니다.</p></div>
+          <a class="btn btn-primary" th:if="${canEditTc and !isCompleted}" th:href="@{/testcase/create(projectId=${project.projectId})}">+ TC 등록</a>
+        </div>
+        <div class="empty-state detail-empty" th:if="${#lists.isEmpty(testCases)}">아직 등록된 테스트 케이스가 없습니다.</div>
+        <div class="tc-list" th:unless="${#lists.isEmpty(testCases)}">
+          <div class="tc-row" th:each="tc : ${testCases}">
+            <span class="tc-code" th:text="${tc.caseCode}">TC-001</span>
+            <a th:href="@{/testcase/detail(testCaseId=${tc.testCaseId})}" th:text="${tc.title}">테스트 제목</a>
+            <form th:if="${canEditTc and !isCompleted}" th:action="@{/testcase/result}" method="post" class="tc-inline-form">
+              <input type="hidden" name="testCaseId" th:value="${tc.testCaseId}">
+              <select name="result" class="tc-result tc-result-select"
+                      th:classappend="' tc-result-' + ${tc.result}"
+                      onchange="this.form.submit()" aria-label="테스트 케이스 실행 결과 변경">
+                <option value="0" th:selected="${tc.result == '0'}">PASS</option>
+                <option value="1" th:selected="${tc.result == '1'}">FAIL</option>
+                <option value="2" th:selected="${tc.result == '2'}">BLOCK</option>
+                <option value="3" th:selected="${tc.result == '3'}">N/A</option>
+                <option value="4" th:selected="${tc.result == '4'}">NO RUN</option>
+              </select>
+            </form>
+            <span th:unless="${canEditTc and !isCompleted}" class="tc-result"
+                  th:classappend="' tc-result-' + ${tc.result}"
+                  th:text="${tc.result == '0' ? 'PASS' : (tc.result == '1' ? 'FAIL' : (tc.result == '2' ? 'BLOCK' : (tc.result == '3' ? 'N/A' : 'NO RUN')))}">NO RUN</span>
+          </div>
+        </div>
+        <nav class="work-pagination" id="tc-pagination" aria-label="테스트케이스 페이지"></nav>
+      </section>
+
+	  <section id="issue-panel" class="dashboard-card detail-issues work-tab-panel"
+	           role="tabpanel" aria-labelledby="issue-tab">
+
+	      <div class="card-heading detail-issues-heading">
+	          <div>
+	              <h2 id="issues-title">프로젝트 이슈</h2>
+	              <p class="detail-section-caption">
+	                  이 프로젝트에 등록된 업무와 결함을 관리하는 공간입니다.
+	              </p>
+	          </div>
+
+	          <a class="btn btn-primary"
+	             th:if="${!isCompleted}" th:href="@{/issue/create(projectId=${project.projectId})}">
+	              + 새 이슈 등록
+	          </a>
+	      </div>
+
+	      <!-- 등록된 이슈가 없을 때 -->
+	      <div class="empty-state detail-empty"
+	           th:if="${issues == null or #lists.isEmpty(issues)}">
+	          <div class="empty-icon">◎</div>
+	          <h3>아직 등록된 이슈가 없어요</h3>
+	          <p>새 이슈를 등록하고 프로젝트의 업무와 결함을 관리해 보세요.</p>
+	      </div>
+
+	      <!-- 등록된 이슈가 있을 때 -->
+	      <div class="issue-list"
+	           th:if="${issues != null and !#lists.isEmpty(issues)}">
+
+	          <div class="issue-list-header">
+	              <span>유형 / 제목</span>
+	              <span>우선순위</span>
+	              <span>상태</span>
+	              <span>마감일</span>
+	          </div>
+
+	          <div class="issue-list-row"
+	               th:each="issue : ${issues}">
+
+	              <div class="issue-list-title">
+	                  <span class="issue-type"
+	                        th:classappend="${issue.type == '1'} ? ' issue-type-bug' : ' issue-type-task'"
+	                        th:text="${issue.type == '1'} ? 'BUG' : 'TASK'">
+	                      TASK
+	                  </span>
+
+					  <a class="issue-title-link"
+					     th:href="@{/issue/detail(issueId=${issue.issueId})}"
+					     th:text="${issue.title}">
+					      이슈 제목
+					  </a>
+	              </div>
+
+	              <div>
+                  <span th:if="${isCompleted}" th:text="${issue.priority == '0' ? '낮음' : (issue.priority == '1' ? '보통' : '높음')}"></span>
+                  <form th:if="${!isCompleted}" th:action="@{/issue/priority}" method="post">
+                      <input type="hidden" name="issueId" th:value="${issue.issueId}">
+                      <select name="priority" class="inline-issue-select"
+                          th:attr="data-value=${issue.priority}"
+                              aria-label="이슈 우선순위 변경" onchange="this.form.submit()">
+                          <option value="0" th:selected="${issue.priority == '0'}">낮음</option>
+                          <option value="1" th:selected="${issue.priority == '1'}">보통</option>
+                          <option value="2" th:selected="${issue.priority == '2'}">높음</option>
+                      </select>
+                  </form>
+              </div>
+
+              <div>
+                  <span th:if="${isCompleted}" th:text="${issue.status == '0' ? '대기' : (issue.status == '1' ? '진행 중' : (issue.status == '2' ? '검토 대기' : '완료'))}"></span>
+                  <form th:if="${!isCompleted}" th:action="@{/issue/status}" method="post">
+                      <input type="hidden" name="issueId" th:value="${issue.issueId}">
+                      <select name="status" class="inline-issue-select" th:attr="data-value=${issue.status}"
+                              aria-label="이슈 상태 변경" onchange="this.form.submit()">
+                          <option value="0" th:selected="${issue.status == '0'}">대기</option>
+                          <option value="1" th:selected="${issue.status == '1'}">진행 중</option>
+                          <option value="2" th:selected="${issue.status == '2'}">검토 대기</option>
+                          <option value="3" th:selected="${issue.status == '3'}">완료</option>
+                      </select>
+                  </form>
+              </div>
+
+              <div class="issue-list-date"
+	                   th:text="${issue.dueDate != null ? issue.dueDate : '미설정'}">
+	                  미설정
+	              </div>
+	          </div>
+	      </div>
+
+          <nav class="work-pagination" id="issue-pagination" aria-label="이슈 페이지"></nav>
+	  </section>
+
+    </main>
+  </div>
+  
+  <!-- 멤버 추가 모달 -->
+  <dialog id="memberModal" class="member-modal" th:if="${canManage and !isCompleted}">
+      <form th:action="@{/project/member/add}" method="post">
+          <input type="hidden" name="projectId"
+                 th:value="${project.projectId}">
+
+          <div class="member-modal-heading">
+              <h2>멤버 추가</h2>
+              <button type="button" class="member-modal-close"
+                      onclick="document.getElementById('memberModal').close()"
+                      aria-label="닫기">×</button>
+          </div>
+
+          <p class="member-modal-description">
+              가입된 사용자의 이메일을 입력해 프로젝트에 초대하세요.
+          </p>
+
+          <label class="member-form-label" for="memberEmail">이메일</label>
+          <input id="memberEmail" type="email" name="email"
+                 class="member-form-input"
+                 placeholder="example@email.com" required>
+
+          <label class="member-form-label" for="memberRole">역할</label>
+          <select id="memberRole" name="role" class="member-form-input">
+              <option value="1">QA</option>
+              <option value="2">개발자</option>
+          </select>
+
+          <div class="member-modal-footer">
+              <button type="button" class="btn btn-outline"
+                      onclick="document.getElementById('memberModal').close()">
+                  취소
+              </button>
+              <button type="submit" class="btn btn-primary">멤버 추가</button>
+          </div>
+      </form>
+  </dialog>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const PAGE_SIZE = 8;
+      const tabs = Array.from(document.querySelectorAll('[data-work-tab]'));
+      const configs = {
+        issue: { panel: document.getElementById('issue-panel'), selector: '.issue-list-row', nav: document.getElementById('issue-pagination'), page: 1 },
+        tc: { panel: document.getElementById('tc-panel'), selector: '.tc-row', nav: document.getElementById('tc-pagination'), page: 1 }
+      };
+      function renderPage(type) {
+        const cfg = configs[type];
+        const rows = Array.from(cfg.panel.querySelectorAll(cfg.selector));
+        const total = Math.ceil(rows.length / PAGE_SIZE);
+        cfg.page = Math.min(Math.max(cfg.page, 1), Math.max(total, 1));
+        rows.forEach((row, i) => { row.hidden = i < (cfg.page - 1) * PAGE_SIZE || i >= cfg.page * PAGE_SIZE; });
+        cfg.nav.replaceChildren();
+        if (total <= 1) return;
+        function addButton(label, target, disabled, current) {
+          const btn = document.createElement('button');
+          btn.type = 'button'; btn.textContent = label;
+          btn.className = 'work-page-button' + (current ? ' is-active' : '');
+          btn.disabled = disabled;
+          if (current) btn.setAttribute('aria-current', 'page');
+          btn.addEventListener('click', () => { cfg.page = target; renderPage(type); });
+          cfg.nav.appendChild(btn);
+        }
+        addButton('이전', cfg.page - 1, cfg.page === 1, false);
+        for (let n = 1; n <= total; n++) addButton(String(n), n, false, n === cfg.page);
+        addButton('다음', cfg.page + 1, cfg.page === total, false);
+      }
+      function activate(type) {
+        Object.entries(configs).forEach(([name, cfg]) => { cfg.panel.hidden = name !== type; });
+        tabs.forEach(tab => {
+          const selected = tab.dataset.workTab === type;
+          tab.classList.toggle('is-active', selected);
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+        });
+        renderPage(type);
+      }
+      tabs.forEach(tab => tab.addEventListener('click', () => activate(tab.dataset.workTab)));
+      tabs.forEach((tab, index) => tab.addEventListener('keydown', event => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        activate(next.dataset.workTab); next.focus();
+      }));
+      renderPage('issue'); renderPage('tc'); activate('issue');
+    });
+  </script>
+<script>
+  (function () {
+    const anchor = document.getElementById('memberPopoverAnchor');
+    const trigger = document.getElementById('memberPopoverTrigger');
+    const panel = document.getElementById('memberPopoverPanel');
+    if (!anchor || !trigger || !panel) return;
+    function close() { panel.hidden = true; trigger.setAttribute('aria-expanded', 'false'); }
+    trigger.addEventListener('click', function () {
+      const opening = panel.hidden;
+      panel.hidden = !opening;
+      trigger.setAttribute('aria-expanded', String(opening));
+    });
+    document.addEventListener('click', function (event) {
+      if (!anchor.contains(event.target)) close();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') { close(); trigger.focus(); }
+    });
+  })();
+</script>
+</body>
+</html>

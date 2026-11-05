@@ -1,0 +1,35 @@
+.tc-wrap{max-width:1000px;margin:0 auto;display:grid;gap:22px}.tc-wrap>a{color:#7655c3;text-decoration:none}.tc-wrap h1{margin:0}.tc-form{display:grid;gap:18px;padding:28px}.tc-form label{display:grid;gap:8px;font-weight:600}.tc-form input,.tc-form textarea,.tc-form select{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #ddd6ea;border-radius:10px;font:inherit;background:#fff;color:#292337}.tc-form textarea{resize:vertical}.tc-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px}.tc-error{color:#c52b43}.tc-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.tc-detail{padding:26px}.tc-detail h2{font-size:16px;margin:16px 0 8px}.tc-detail p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}.tc-result{display:inline-block;padding:5px 12px;border-radius:999px;background:#eee;color:#555;font-size:12px;font-weight:700}.tc-result-0{background:#e1f6e7;color:#167c3b}.tc-result-1{background:#ffe4e7;color:#b91c35}.tc-result-2{background:#fff0cf;color:#996400}.tc-result-3,.tc-result-4{background:#eee;color:#666}.tc-list{display:grid;gap:8px}.tc-row{display:grid;grid-template-columns:minmax(100px,140px) minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;border:1px solid #eee9f4;border-radius:10px}.tc-row a{color:inherit;text-decoration:none;overflow-wrap:anywhere}.tc-row a:hover{text-decoration:underline}.tc-row .tc-code{font-weight:700;color:#7355bb}@media(max-width:650px){.tc-row{grid-template-columns:1fr auto}.tc-row .tc-code{grid-column:1/-1}.tc-form{padding:16px}}
+
+
+/* 프로젝트 상세: TC 결과 인라인 변경 */
+.tc-inline-form { margin: 0; justify-self: end; }
+.tc-result-select {
+    width: auto;
+    min-width: 96px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1.4;
+    text-align: center;
+    text-align-last: center;
+}
+.tc-result-select:focus-visible { outline: 2px solid #6865e8; outline-offset: 2px; }
+
+
+/* 이슈 상태·우선순위 드롭다운 색상 */
+.inline-issue-select {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 6px 9px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.inline-issue-select[name="priority"][data-value="0"] { background: #f1f3f6; color: #64748b; }
+.inline-issue-select[name="priority"][data-value="1"] { background: #e6f7ec; color: #16804a; }
+.inline-issue-select[name="priority"][data-value="2"] { background: #fff0f0; color: #c53030; }
+.inline-issue-select[name="status"][data-value="0"] { background: #f1f3f6; color: #64748b; }
+.inline-issue-select[name="status"][data-value="1"] { background: #e8efff; color: #335ec9; }
+.inline-issue-select[name="status"][data-value="2"] { background: #fff2da; color: #a26a09; }
+.inline-issue-select[name="status"][data-value="3"] { background: #e6f7ec; color: #16804a; }

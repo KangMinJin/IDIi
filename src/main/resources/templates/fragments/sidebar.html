@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<body>
+
+<aside class="sidebar" th:fragment="sidebar">
+
+    <p class="sidebar-label">WORKSPACE</p>
+
+    <nav class="sidebar-nav" aria-label="워크스페이스 메뉴">
+
+        <a class="sidebar-link"
+           th:classappend="${#httpServletRequest != null} ? '' : ''"
+           th:href="@{/}">
+            <svg class="nav-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+            대시보드
+        </a>
+
+        <a class="sidebar-link" th:href="@{/project/create}">
+            <svg class="nav-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v6M9 14h6"/></svg>
+            새 프로젝트
+        </a>
+
+        <a class="sidebar-link" th:href="@{/(tab='completed')}">
+            <svg class="nav-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 12 5 5L20 6"/></svg>
+            완료된 프로젝트
+        </a>
+    </nav>
+
+    <!-- 참여 중인 프로젝트 -->
+    <div class="sidebar-projects">
+
+        <p class="sidebar-label">진행 중인 프로젝트</p>
+
+        <p class="sidebar-empty"
+           th:if="${sidebarProjects == null or #lists.isEmpty(sidebarProjects)}">
+            참여 중인 프로젝트가 없습니다.
+        </p>
+
+        <nav class="sidebar-nav" aria-label="참여 중인 프로젝트">
+
+            <a class="sidebar-link sidebar-project-link"
+               th:each="project : ${sidebarProjects}"
+               th:href="@{/project/detail(projectId=${project.projectId})}">
+
+                <svg class="nav-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span class="sidebar-project-name"
+                      th:text="${project.title}">
+                    프로젝트 이름
+                </span>
+
+            </a>
+
+        </nav>
+        <a class="sidebar-link sidebar-view-all" th:if="${sidebarHasMore}" th:href="@{/#my-projects}">
+            <span class="nav-icon" aria-hidden="true">···</span>
+            전체 프로젝트 보기
+        </a>
+
+    </div>
+
+    <div class="sidebar-bottom">
+        <span class="sidebar-dot"></span>
+        IDI! QA Workspace
+    </div>
+
+</aside>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이슈 등록 | IDI!</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        .issue-form-card {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .issue-form {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .issue-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .issue-field label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .issue-field input,
+        .issue-field textarea,
+        .issue-field select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 14px;
+            border: 1px solid #dedee8;
+            border-radius: 10px;
+            background: #fff;
+            color: #333;
+            font: inherit;
+        }
+
+        .issue-field textarea {
+            min-height: 170px;
+            resize: vertical;
+        }
+
+        .issue-field input:focus,
+        .issue-field textarea:focus,
+        .issue-field select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        .issue-form-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .issue-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .issue-required {
+            color: #8b5cf6;
+        }
+
+        @media (max-width: 640px) {
+            .issue-form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .issue-form-actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="app-shell">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+	    <main class="dashboard-main">
+	        <div class="dashboard-card">
+	            <div class="card-heading">
+	                <h2>새 이슈 등록</h2>
+	                <p>프로젝트에 새로운 작업이나 버그를 등록합니다.</p>
+	            </div>
+	
+	            <form class="issue-form"
+	                  th:action="@{/issue/create(projectId=${projectId})}"
+	                  method="post">
+	
+	                <div class="issue-field">
+	                    <label for="title">
+	                        이슈 제목 <span class="issue-required">*</span>
+	                    </label>
+	                    <input type="text"
+	                           id="title"
+	                           name="title"
+	                           maxlength="100"
+	                           placeholder="이슈 제목을 입력하세요."
+	                           required>
+	                </div>
+	
+	                <div class="issue-field">
+	                    <label for="content">상세 내용</label>
+	                    <textarea id="content"
+	                              name="content"
+	                              placeholder="작업 내용 또는 버그 재현 절차를 작성하세요."></textarea>
+	                </div>
+	
+	                <div class="issue-form-row">
+	                    <div class="issue-field">
+	                        <label for="type">이슈 유형</label>
+	                        <select id="type" name="type">
+	                            <option value="0">작업(Task)</option>
+	                            <option value="1">버그(Bug)</option>
+	                        </select>
+	                    </div>
+	
+	                    <div class="issue-field">
+	                        <label for="priority">우선순위</label>
+	                        <select id="priority" name="priority">
+	                            <option value="0">낮음</option>
+	                            <option value="1" selected>보통</option>
+	                            <option value="2">높음</option>
+	                        </select>
+	                    </div>
+	                </div>
+	
+	                <div class="issue-field">
+	                    <label for="dueDate">마감일</label>
+	                    <input type="date" id="dueDate" name="dueDate">
+	                </div>
+	
+	                <div class="issue-form-actions">
+	                    <a class="btn btn-outline"
+	                       th:href="@{/project/detail(projectId=${projectId})}">
+	                        취소
+	                    </a>
+	                    <button type="submit" class="btn btn-primary">
+	                        이슈 등록
+	                    </button>
+	                </div>
+	            </form>
+	        </div>
+	    </main>
+    </div>
+
+</body>
+</html>

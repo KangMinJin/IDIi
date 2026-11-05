@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDI! | 함께 완성하는 프로젝트</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <style>
+    /* 상단 통계 카드 3개: 같은 헤더/그래프/범례 구조 */
+    .stats-grid > .stat { min-height: 270px; }
+    .dashboard-visual-stat { display: flex; flex-direction: column; gap: 12px; }
+    .dashboard-stat-header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .dashboard-stat-header > span { font-size: 13px; }
+    .dashboard-stat-header > strong { font-size: 28px; line-height: 1.1; color: #605ee0; }
+    .dashboard-stat-body { flex: 1; display: flex; align-items: center; gap: 14px; min-height: 160px; }
+    /* 도넛 카드 2개의 차트 시작 위치와 크기를 동일하게 고정 */
+    .dashboard-doughnut-body { align-items: flex-start; padding-top: 12px; }
+    .dashboard-doughnut-body .dashboard-chart-wrap { width: 150px; height: 150px; flex: 0 0 150px; }
+    .dashboard-doughnut-body .dashboard-legend { padding-top: 0; }
+    .dashboard-chart-wrap { position: relative; width: 150px; height: 150px; flex: 0 0 150px; }
+    .dashboard-chart-wrap canvas { width: 100% !important; height: 100% !important; }
+    .dashboard-legend { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+    .dashboard-legend-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #77758b; }
+    .dashboard-legend-item strong { font-size: 12px; color: #605ee0; }
+    .dashboard-legend-name { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .tc-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex: 0 0 9px; }
+    .dashboard-stat-foot { font-size: 11px; color: #9296b5; margin-top: auto; }
+    .dashboard-empty { font-size: 12px; color: #77758b; text-align: center; width: 100%; }
+    .issue-status-body { display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+    .issue-status-track { display: flex; width: 100%; height: 12px; border-radius: 999px; overflow: hidden; background: #e7e7ee; }
+    .issue-status-track > span { height: 100%; min-width: 0; }
+    .issue-status-legend { display: flex; flex-direction: column; width: 100%; gap: 10px; }
+    .issue-status-legend .dashboard-legend-item { gap: 8px; width: 100%; }
+    .project-tc-summary { margin-top: 14px; }
+    .project-tc-title { display: block; margin-bottom: 8px; font-size: 12px; color: #77758b; }
+    .project-tc-track { display: flex; width: 100%; height: 10px; border-radius: 999px; overflow: hidden; background: #e7e7ee; }
+    .project-tc-segment { min-width: 0; height: 100%; }
+    .project-tc-legend { display: flex; flex-wrap: wrap; gap: 5px 10px; margin-top: 8px; font-size: 10px; color: #77758b; }
+    .project-tc-legend > span { display: inline-flex; align-items: center; gap: 4px; }
+    @media (max-width: 1250px) { .dashboard-stat-body { flex-wrap: wrap; justify-content: center; } .dashboard-legend { width: 100%; flex-basis: 100%; } .dashboard-doughnut-body { align-content: flex-start; } }
+    @media (max-width: 420px) { .dashboard-chart-wrap, .dashboard-doughnut-body .dashboard-chart-wrap { width: 125px; height: 125px; flex-basis: 125px; } }
+  </style>
+</head>
+<body>
+  <div th:replace="~{fragments/header :: header}"></div>
+
+  <!-- 로그인 전: 서비스 소개 -->
+  <main class="landing" th:unless="${isLogin}">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">I DID IT! — 함께 완성하는 프로젝트</span>
+        <h1>할 일을 정리하고,<br><em>완료의 순간까지.</em></h1>
+        <p>프로젝트부터 이슈, 결함 관리까지.<br>팀의 모든 진행 상황을 한곳에서 관리하세요.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-large" th:href="@{/user/signup}">무료로 시작하기 →</a>
+          <a class="btn btn-outline btn-large" th:href="@{/user/login}">로그인</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-label="팀원들이 협업하는 모습">
+        <img th:src="@{/images/collaboration.svg}" alt="팀원들이 함께 프로젝트를 관리하는 협업 일러스트">
+      </div>
+    </section>
+    <section class="feature-section">
+      <div class="section-heading"><span class="eyebrow">WHY IDI!?</span><h2>협업에 필요한 기능을 한곳에</h2></div>
+      <div class="feature-grid">
+        <article class="feature-card"><span class="feature-icon">▤</span><h3>프로젝트 관리</h3><p>업무를 프로젝트별로 정리하고 함께 관리해요.</p></article>
+        <article class="feature-card"><span class="feature-icon">◎</span><h3>이슈 추적</h3><p>버그와 할 일을 기록하고 진행 상태를 확인해요.</p></article>
+        <article class="feature-card"><span class="feature-icon">◷</span><h3>진행 현황</h3><p>팀의 업무 흐름을 한눈에 파악해요.</p></article>
+      </div>
+    </section>
+    <section class="landing-bottom"><h2>혼자가 아닌, 함께 만드는 완료.</h2><p>팀의 아이디어를 실행 가능한 업무로 연결해 보세요.</p><a class="btn btn-primary" th:href="@{/user/signup}">IDI! 시작하기 →</a></section>
+  </main>
+
+  <!-- 로그인 후: 워크스페이스 -->
+  <div class="app-shell" th:if="${isLogin}">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="dashboard-main">
+      <div class="page-heading"><div><span class="eyebrow">MY WORKSPACE</span><h1>프로젝트 대시보드</h1><p>진행 중인 업무를 한곳에서 확인하세요.</p></div><a class="btn btn-primary" th:href="@{/project/create}">+ 새 프로젝트</a></div>
+      <section class="dashboard-card"><div class="card-heading"><h2>프로젝트 현황</h2><span class="muted">Dashboard</span></div>
+        <div class="stats-grid">
+          <div class="stat dashboard-visual-stat">
+            <div class="dashboard-stat-header"><span>전체 이슈 · 상태별 현황</span><strong th:text="${totalIssues}">0</strong></div>
+            <div class="dashboard-stat-body issue-status-body" th:if="${totalIssues > 0}">
+              <div class="issue-status-track" aria-label="이슈 상태별 분포">
+                <span th:if="${totalWaiting > 0}" th:style="|flex: ${totalWaiting} 1 0%; background:#a7a7b8;|"></span>
+                <span th:if="${totalProgress > 0}" th:style="|flex: ${totalProgress} 1 0%; background:#605ee0;|"></span>
+                <span th:if="${totalReview > 0}" th:style="|flex: ${totalReview} 1 0%; background:#e5a43a;|"></span>
+                <span th:if="${totalDone > 0}" th:style="|flex: ${totalDone} 1 0%; background:#22a06b;|"></span>
+              </div>
+              <div class="issue-status-legend">
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#a7a7b8"></i>대기</span><strong th:text="${totalWaiting}">0</strong></div>
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#605ee0"></i>진행</span><strong th:text="${totalProgress}">0</strong></div>
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#e5a43a"></i>검토</span><strong th:text="${totalReview}">0</strong></div>
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#22a06b"></i>완료</span><strong th:text="${totalDone}">0</strong></div>
+              </div>
+            </div>
+            <div class="dashboard-stat-body" th:if="${totalIssues == 0}"><span class="dashboard-empty">등록된 이슈가 없습니다.</span></div>
+            <small class="dashboard-stat-foot">진행 중인 프로젝트의 전체 이슈</small>
+          </div>
+
+          <div class="stat dashboard-visual-stat">
+            <div class="dashboard-stat-header"><span>이슈 완료율</span><strong th:text="|${issueCompletionRate}%|">0%</strong></div>
+            <div class="dashboard-stat-body dashboard-doughnut-body" th:if="${totalIssues > 0}">
+              <div class="dashboard-chart-wrap">
+                <canvas id="issueDoughnut" aria-label="이슈 완료 비율" role="img"></canvas>
+              </div>
+              <div class="dashboard-legend">
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#605ee0"></i>완료</span><strong th:text="${totalDone}">0</strong></div>
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#e7e7ee"></i>미완료</span><strong th:text="${totalIssues - totalDone}">0</strong></div>
+              </div>
+            </div>
+            <div class="dashboard-stat-body" th:if="${totalIssues == 0}"><span class="dashboard-empty">완료율을 계산할 이슈가 없습니다.</span></div>
+            <small class="dashboard-stat-foot">완료 상태의 이슈 기준</small>
+          </div>
+
+          <div class="stat dashboard-visual-stat">
+            <div class="dashboard-stat-header"><span>TC 실행 결과</span><strong th:text="${totalTc}">0</strong></div>
+            <div class="dashboard-stat-body dashboard-doughnut-body" th:if="${totalTc > 0}">
+              <div class="dashboard-chart-wrap">
+                <canvas id="tcDoughnut" aria-label="테스트케이스 결과 분포" role="img"></canvas>
+              </div>
+              <div class="dashboard-legend">
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#22a06b"></i>PASS</span><strong th:text="${totalPass}">0</strong></div>
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#e35b65"></i>FAIL</span><strong th:text="${totalFail}">0</strong></div>
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#e5a43a"></i>BLOCK</span><strong th:text="${totalBlock}">0</strong></div>
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#8895b4"></i>N/A</span><strong th:text="${totalNa}">0</strong></div>
+                <div class="dashboard-legend-item"><span class="dashboard-legend-name"><i class="tc-dot" style="background:#a7a7b8"></i>NO RUN</span><strong th:text="${totalNoRun}">0</strong></div>
+              </div>
+            </div>
+            <div class="dashboard-stat-body" th:if="${totalTc == 0}"><span class="dashboard-empty">등록된 테스트케이스가 없습니다.</span></div>
+            <small class="dashboard-stat-foot">진행 중인 프로젝트의 테스트 실행 현황</small>
+          </div>
+        </div>
+      </section>
+      <section class="dashboard-card" id="my-projects"><div class="card-heading"><h2>내 프로젝트</h2><a class="text-link" th:href="@{/project/create}">+ 프로젝트 만들기</a></div>
+		<div class="project-tabs" style="display:flex;gap:8px;margin:12px 0 20px;">
+            <a class="btn" th:classappend="${projectTab == 'active'} ? ' btn-primary' : ' btn-outline'" th:href="@{/}">진행 중 <span th:text="${activeProjectCount}">0</span></a>
+            <a class="btn" th:classappend="${projectTab == 'completed'} ? ' btn-primary' : ' btn-outline'" th:href="@{/(tab='completed')}">완료 <span th:text="${completedProjectCount}">0</span></a>
+        </div>
+        <!-- 프로젝트가 없을 때 -->
+		<div class="empty-state" th:if="${#lists.isEmpty(projectList)}">
+		    <div class="empty-icon">▤</div>
+		    <h3>프로젝트가 없습니다.</h3>
+		    <p>해당 상태의 프로젝트가 없습니다.</p>
+		    <a class="btn btn-primary" th:href="@{/project/create}">
+		        새 프로젝트 생성
+		    </a>
+		</div>
+
+		<!-- 프로젝트가 있을 때 -->
+		<div class="project-grid" th:unless="${#lists.isEmpty(projectList)}">
+		
+			<a class="project-card-link"
+			   th:href="@{/project/detail(projectId=${project.projectId})}"
+			   th:each="project : ${projectList}">
+			    <article class="project-card">
+	
+			        <div class="project-card-top">
+			            <span class="project-icon">▤</span>
+						<span class="project-role"
+						      th:text="${projectRoles[project.projectId]}">
+						    역할
+						</span>
+			        </div>
+	
+			        <h3 th:text="${project.title}">프로젝트 이름</h3>
+	
+			        <p th:text="${#strings.isEmpty(project.description) ? '프로젝트 설명이 없습니다.' : project.description}">
+			            프로젝트 설명
+			        </p>
+					<div class="project-mini-stats"
+					     th:with="stat=${projectStats[project.projectId]}">
+
+					    <div class="project-mini-counts">
+					        <span>
+					            이슈
+					            <strong th:text="${stat['issues']}">0</strong>
+					        </span>
+
+					        <span>
+					            TC
+					            <strong th:text="${stat['tc']}">0</strong>
+					        </span>
+					    </div>
+
+					    <div class="project-mini-progress">
+					        <span>이슈 완료율</span>
+
+					        <strong th:text="${stat['issues'] > 0
+					            ? (stat['done'] * 100 / stat['issues']) + '%'
+					            : '—'}">—</strong>
+					    </div>
+
+					    <div class="project-progress-track">
+					        <div class="project-progress-fill"
+					             th:style="|width: ${stat['issues'] > 0
+					                 ? stat['done'] * 100 / stat['issues']
+					                 : 0}%;|">
+					        </div>
+	                    </div>
+
+                    <div class="project-tc-summary">
+                        <span class="project-tc-title">TC 실행 결과</span>
+                        <div class="project-tc-track" aria-label="TC 결과별 분포">
+                            <th:block th:if="${stat['tc'] > 0}">
+                                <span class="project-tc-segment" th:if="${stat['pass'] > 0}" th:style="|flex: ${stat['pass']} 1 0%; background: #22a06b;|"></span>
+                                <span class="project-tc-segment" th:if="${stat['fail'] > 0}" th:style="|flex: ${stat['fail']} 1 0%; background: #e35b65;|"></span>
+                                <span class="project-tc-segment" th:if="${stat['block'] > 0}" th:style="|flex: ${stat['block']} 1 0%; background: #e5a43a;|"></span>
+                                <span class="project-tc-segment" th:if="${stat['na'] > 0}" th:style="|flex: ${stat['na']} 1 0%; background: #8895b4;|"></span>
+                                <span class="project-tc-segment" th:if="${stat['noRun'] > 0}" th:style="|flex: ${stat['noRun']} 1 0%; background: #a7a7b8;|"></span>
+                            </th:block>
+                        </div>
+                        <div class="project-tc-legend">
+                            <span><i class="tc-dot" style="background:#22a06b"></i>PASS</span>
+                            <span><i class="tc-dot" style="background:#e35b65"></i>FAIL</span>
+                            <span><i class="tc-dot" style="background:#e5a43a"></i>BLOCK</span>
+                            <span><i class="tc-dot" style="background:#8895b4"></i>N/A</span>
+                            <span><i class="tc-dot" style="background:#a7a7b8"></i>NO RUN</span>
+                        </div>
+                    </div>
+
+                    </div>
+                <div class="project-card-footer">
+			            <span th:text="${project.dueDate != null ? '마감일: ' + project.dueDate : '마감일 미설정'}">
+			                마감일 미설정
+			            </span>
+			        </div>
+	
+			    </article>
+			</a>
+		</div>
+        <nav class="project-pagination" th:if="${totalPages > 1}" aria-label="프로젝트 페이지 이동">
+          <a class="project-page-link" th:if="${hasPreviousPage}"
+             th:href="@{/(tab=${projectTab},page=${currentPage - 1})}">이전</a>
+          <th:block th:each="pageNumber : ${#numbers.sequence(1, totalPages)}">
+            <a class="project-page-link" th:href="@{/(tab=${projectTab},page=${pageNumber})}"
+               th:classappend="${pageNumber == currentPage} ? ' is-current' : ''"
+               th:attr="aria-current=${pageNumber == currentPage} ? 'page' : null"
+               th:text="${pageNumber}">1</a>
+          </th:block>
+          <a class="project-page-link" th:if="${hasNextPage}"
+             th:href="@{/(tab=${projectTab},page=${currentPage + 1})}">다음</a>
+        </nav>
+      </section>
+    </main>
+  </div>
+  <!-- 도넛 차트 2개에만 Chart.js 사용; 프로젝트 카드 막대는 CSS 유지 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script th:if="${isLogin}" th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof Chart === 'undefined') {
+        console.warn('Chart.js를 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
+        return;
+      }
+      function renderDoughnut(id, labels, values, colors) {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        new Chart(canvas, {
+          type: 'doughnut',
+          data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+          options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { display: false } } }
+        });
+      }
+      const totalIssues = /*[[${totalIssues}]]*/ 0;
+      const totalDone = /*[[${totalDone}]]*/ 0;
+      renderDoughnut('issueDoughnut', ['완료', '미완료'], [totalDone, totalIssues - totalDone], ['#605ee0', '#e7e7ee']);
+      renderDoughnut('tcDoughnut', ['PASS', 'FAIL', 'BLOCK', 'N/A', 'NO RUN'], [
+        /*[[${totalPass}]]*/ 0, /*[[${totalFail}]]*/ 0, /*[[${totalBlock}]]*/ 0,
+        /*[[${totalNa}]]*/ 0, /*[[${totalNoRun}]]*/ 0
+      ], ['#22a06b', '#e35b65', '#e5a43a', '#8895b4', '#a7a7b8']);
+    });
+  </script>
+</body>
+</html>

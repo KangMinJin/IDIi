@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${issue.title} + ' | IDI!'">이슈 상세 | IDI!</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/issue-detail.css}">
+</head>
+<body>
+
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="app-shell">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="dashboard-main issue-detail-main">
+
+            <!-- 상단 경로 -->
+            <nav class="issue-breadcrumb">
+                <a th:href="@{/}">내 프로젝트</a>
+                <span>›</span>
+                <a th:href="@{/project/detail(projectId=${issue.projectId})}">
+                    프로젝트 상세
+                </a>
+                <span>›</span>
+                <span th:text="${issue.title}">이슈 제목</span>
+            </nav>
+
+            <!-- 이슈 제목 -->
+            <div class="issue-detail-header">
+                <div>
+                    <span class="eyebrow">ISSUE DETAIL</span>
+
+                    <div class="issue-detail-title">
+                        <span class="issue-detail-type"
+                              th:classappend="${issue.type == '1'} ? ' type-bug' : ' type-task'"
+                              th:text="${issue.type == '1'} ? 'BUG' : 'TASK'">
+                            TASK
+                        </span>
+
+                        <h1 th:text="${issue.title}">이슈 제목</h1>
+                    </div>
+
+                    <p th:text="'이슈 #' + ${issue.issueId}">
+                        이슈 #1
+                    </p>
+                </div>
+
+				<div class="issue-detail-actions">
+				    <a class="btn btn-outline"
+				       th:href="@{/project/detail(projectId=${issue.projectId})}">
+				        ← 프로젝트로
+				    </a>
+
+				    <a class="btn btn-primary" th:if="${!projectCompleted}"
+				       th:href="@{/issue/edit(issueId=${issue.issueId})}">
+				        이슈 수정
+				    </a>
+
+				    <form th:if="${!projectCompleted}" th:action="@{/issue/delete(issueId=${issue.issueId})}"
+				          method="post"
+				          onsubmit="return confirm('정말 이 이슈를 삭제하시겠습니까?');">
+
+				        <button type="submit" class="btn btn-danger">
+				            이슈 삭제
+				        </button>
+				    </form>
+				</div>
+            </div>
+
+            <div class="issue-detail-layout">
+
+                <!-- 왼쪽: 상세 내용 -->
+                <section class="dashboard-card issue-content-card">
+                    <div class="card-heading">
+                        <h2>상세 내용</h2>
+                    </div>
+
+                    <div class="issue-description"
+                         th:text="${#strings.isEmpty(issue.content) ? '등록된 상세 내용이 없습니다.' : issue.content}">
+                        이슈 상세 내용
+                    </div>
+                </section>
+
+                <!-- 오른쪽: 이슈 정보 -->
+                <aside class="dashboard-card issue-info-card">
+                    <div class="card-heading">
+                        <h2>이슈 정보</h2>
+                    </div>
+
+                    <div class="issue-info-line">
+                        <span>유형</span>
+                        <strong th:text="${issue.type == '1'} ? '버그' : '작업'">
+                            작업
+                        </strong>
+                    </div>
+
+                    <div class="issue-info-line">
+                        <span>상태</span>
+                        <strong class="issue-info-status"
+                                th:text="${issue.status == '0'} ? '대기' :
+                                         (${issue.status == '1'} ? '진행 중' :
+                                         (${issue.status == '2'} ? '검토 대기' : '완료'))">
+                            대기
+                        </strong>
+                    </div>
+
+                    <div class="issue-info-line">
+                        <span>우선순위</span>
+                        <strong th:classappend="${issue.priority == '2'} ? ' priority-high' : ''"
+                                th:text="${issue.priority == '2'} ? '높음' :
+                                         (${issue.priority == '0'} ? '낮음' : '보통')">
+                            보통
+                        </strong>
+                    </div>
+
+                    <div class="issue-info-line">
+                        <span>작성자</span>
+                        <strong th:text="${issue.reporterNickname != null ? issue.reporterNickname : '탈퇴/알 수 없는 회원'}">#1</strong>
+                    </div>
+
+                    <div class="issue-info-line">
+                        <span>담당자</span>
+                        <strong th:if="${issue.assigneeId == null}">미배정</strong>
+                        <strong th:if="${issue.assigneeId != null}" th:text="${issue.assigneeNickname != null ? issue.assigneeNickname : '탈퇴/알 수 없는 회원'}">담당자</strong>
+                    </div>
+
+                    <div class="issue-info-line">
+                        <span>마감일</span>
+                        <strong th:text="${issue.dueDate != null ? issue.dueDate : '미설정'}">
+                            미설정
+                        </strong>
+                    </div>
+
+                    <div class="issue-info-line">
+                        <span>등록일</span>
+                        <strong th:text="${issue.createdAt != null ? #temporals.format(issue.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">
+                            -
+                        </strong>
+                    </div>
+                </aside>
+            </div>
+
+			
+			<!-- 댓글 영역 -->
+			<section class="comment-section" id="comments">
+			    <div class="comment-header">
+			        <h2>댓글</h2>
+			        <span class="comment-count"
+			              th:text="${comments != null ? #lists.size(comments) : 0} + '개'">
+			            0개
+			        </span>
+			    </div>
+
+			    <!-- 댓글 목록 -->
+			    <div class="comment-list">
+
+			        <div class="comment-empty"
+			             th:if="${comments == null or #lists.isEmpty(comments)}">
+			            아직 등록된 댓글이 없습니다.
+			            첫 번째 댓글을 작성해 보세요!
+			        </div>
+
+			        <div class="comment-item"
+			             th:each="comment : ${comments}">
+
+			            <div class="comment-item-header">
+			                <span class="comment-author"
+			                      th:text="${comment.authorNickname != null ? comment.authorNickname : '탈퇴/알 수 없는 회원'}">
+			                    사용자
+			                </span>
+
+			                <span class="comment-date"
+			                      th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">
+			                    2026-11-03 14:00
+			                </span>
+			            </div>
+
+			            <p class="comment-content"
+			               th:text="${comment.content}">
+			                댓글 내용
+			            </p>
+			        </div>
+			    </div>
+
+			    <!-- 댓글 작성 -->
+				<p th:if="${commentError}"
+				   th:text="${commentError}"
+				   class="comment-error">
+				</p>
+			    <form class="comment-form" th:if="${!projectCompleted}"
+			          th:action="@{/issue/comment/create(issueId=${issue.issueId})}"
+			          method="post">
+
+			        <label for="commentContent">댓글 작성</label>
+
+			        <textarea id="commentContent"
+			                  name="content"
+			                  maxlength="500"
+			                  rows="4"
+			                  placeholder="의견이나 진행 상황을 남겨주세요."
+			                  required></textarea>
+
+			        <div class="comment-form-footer">
+			            <span class="comment-hint">최대 500자</span>
+
+			            <button type="submit" class="btn btn-primary">
+			                댓글 등록
+			            </button>
+			        </div>
+			    </form>
+			</section>
+
+
+        </main>
+    </div>
+
+</body>
+</html>

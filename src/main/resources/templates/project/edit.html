@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 수정 | IDI!</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+
+    <style>
+        .edit-container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .edit-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: #929bb7;
+        }
+
+        .edit-breadcrumb a {
+            color: var(--purple);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .edit-heading {
+            margin-bottom: 28px;
+        }
+
+        .edit-heading h1 {
+            font-size: 30px;
+            margin: 0 0 10px;
+            letter-spacing: -1px;
+        }
+
+        .edit-heading p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .edit-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 6px 28px rgba(40, 35, 90, 0.04);
+        }
+
+        .edit-card-title {
+            font-size: 17px;
+            margin: 0 0 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .edit-field {
+            margin-bottom: 26px;
+        }
+
+        .edit-field label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--ink);
+        }
+
+        .edit-field input,
+        .edit-field textarea {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px 15px;
+            border: 1px solid #dce0ed;
+            border-radius: 11px;
+            font: inherit;
+            font-size: 14px;
+            color: var(--ink);
+            background: #fff;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .edit-field input:focus,
+        .edit-field textarea:focus {
+            outline: none;
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(115, 87, 216, .1);
+        }
+
+        .edit-field textarea {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.7;
+        }
+
+        .edit-hint {
+            margin: 8px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .edit-date-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .edit-error {
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .edit-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            padding-top: 24px;
+            margin-top: 8px;
+            border-top: 1px solid var(--line);
+        }
+
+        .edit-actions .btn {
+            min-width: 110px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .edit-card {
+                padding: 24px 18px;
+            }
+
+            .edit-heading h1 {
+                font-size: 25px;
+            }
+
+            .edit-date-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .edit-actions {
+                flex-direction: column-reverse;
+            }
+
+            .edit-actions .btn {
+                width: 100%;
+            }
+        }
+		/* 삭제 영역 */
+		.edit-delete-form {
+		    margin-top: 24px;
+		    padding-top: 24px;
+		    border-top: 1px solid var(--line);
+		}
+
+		.btn-danger {
+		    background: #fff;
+		    color: #dc3545;
+		    border: 1px solid #f1b5bb;
+		    cursor: pointer;
+		    transition: all 0.2s ease;
+		}
+
+		.btn-danger:hover {
+		    background: #dc3545;
+		    color: #fff;
+		    border-color: #dc3545;
+		}
+
+		.btn-danger:focus-visible {
+		    outline: 3px solid #f1b5bb;
+		    outline-offset: 3px;
+		}
+    </style>
+</head>
+
+<body>
+    <!-- 공통 헤더 -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="app-shell">
+
+        <!-- 공통 사이드바 -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="dashboard-main">
+
+            <div class="edit-container">
+
+                <!-- 경로 표시 -->
+                <nav class="edit-breadcrumb">
+                    <a th:href="@{/}">내 프로젝트</a>
+                    <span>›</span>
+                    <a th:href="@{/project/detail(projectId=${project.projectId})}">
+                        프로젝트 상세
+                    </a>
+                    <span>›</span>
+                    <span>프로젝트 수정</span>
+                </nav>
+
+                <!-- 제목 -->
+                <div class="edit-heading">
+                    <h1>프로젝트 수정</h1>
+                    <p>프로젝트의 기본 정보와 일정을 변경할 수 있어요.</p>
+                </div>
+
+                <!-- 수정 폼 -->
+                <div class="edit-card">
+
+                    <h2 class="edit-card-title">기본 정보</h2>
+
+                    <div class="edit-error"
+                         th:if="${error != null}"
+                         th:text="${error}">
+                        오류 메시지
+                    </div>
+
+                    <form th:action="@{/project/edit}" method="post">
+
+                        <!-- 프로젝트 ID -->
+                        <input type="hidden"
+                               name="projectId"
+                               th:value="${project.projectId}">
+
+                        <!-- 프로젝트 제목 -->
+                        <div class="edit-field">
+                            <label for="title">프로젝트 제목 *</label>
+
+                            <input type="text"
+                                   id="title"
+                                   name="title"
+                                   th:value="${project.title}"
+                                   placeholder="프로젝트 제목을 입력해주세요"
+                                   maxlength="100"
+                                   required>
+                        </div>
+
+                        <!-- 프로젝트 설명 -->
+                        <div class="edit-field">
+                            <label for="description">프로젝트 설명</label>
+
+                            <textarea id="description"
+                                      name="description"
+                                      maxlength="500"
+                                      placeholder="프로젝트에 대한 설명을 입력해주세요"
+                                      th:text="${project.description}"></textarea>
+
+                            <p class="edit-hint">
+                                프로젝트의 목적이나 진행할 업무를 자유롭게 작성해주세요.
+                            </p>
+                        </div>
+
+                        <!-- 프로젝트 일정 -->
+                        <div class="edit-date-grid">
+
+                            <div class="edit-field">
+                                <label for="startDate">시작일</label>
+
+                                <input type="date"
+                                       id="startDate"
+                                       name="startDate"
+                                       th:value="${project.startDate}">
+                            </div>
+
+                            <div class="edit-field">
+                                <label for="dueDate">마감일</label>
+
+                                <input type="date"
+                                       id="dueDate"
+                                       name="dueDate"
+                                       th:value="${project.dueDate}">
+                            </div>
+
+                        </div>
+
+                        <!-- 버튼 -->
+						<div class="edit-actions">
+						    <a class="btn btn-outline"
+						       th:href="@{/project/detail(projectId=${project.projectId})}">
+						        취소
+						    </a>
+
+						    <button type="submit" class="btn btn-primary">
+						        변경사항 저장
+						    </button>
+						</div>
+                    </form>
+					<form th:action="@{/project/delete}"
+					      method="post"
+					      class="edit-delete-form"
+					      onsubmit="return confirm('정말 이 프로젝트를 삭제하시겠습니까?');">
+
+					    <input type="hidden"
+					           name="projectId"
+					           th:value="${project.projectId}">
+
+					    <button type="submit" class="btn btn-danger">
+					        프로젝트 삭제
+					    </button>
+					</form>
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>내 정보 수정 | IDI!</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <style>
+    .profile-wrap{max-width:560px;margin:52px auto;padding:0 20px 70px}
+    .profile-card{background:#fff;border:1px solid #e7e9f4;border-radius:20px;padding:36px;box-shadow:0 12px 35px rgba(61,64,122,.035)}
+    .profile-card h1{margin:0 0 8px;font-size:27px}.profile-sub{color:#8b94b0;font-size:14px;margin:0 0 30px}
+    .profile-field{margin-bottom:22px}.profile-field label{display:block;font-weight:700;font-size:14px;margin-bottom:9px}
+    .profile-field input{width:100%;padding:14px 15px;border:1px solid #dce1f1;border-radius:10px;font:inherit;outline:none}
+    .profile-field input:focus{border-color:#5964dc;box-shadow:0 0 0 3px #5964dc18}
+    .profile-field input[readonly]{background:#f7f8ff;color:#7f88a4}
+    .profile-hint{font-size:12px;color:#9098af;margin-top:7px;line-height:1.5}
+    .profile-divider{border:0;border-top:1px solid #e7e9f4;margin:28px 0}
+    .profile-alert{padding:13px 15px;border-radius:10px;margin-bottom:20px;font-size:14px}
+    .profile-alert.error{background:#fff1f2;color:#b42335}.profile-alert.success{background:#eaf7ef;color:#287a47}
+    .profile-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:28px}
+    @media(max-width:600px){.profile-wrap{margin:22px auto}.profile-card{padding:24px}}
+    .withdraw-card{margin-top:24px;background:#fff;border:1px solid #f0d6da;border-radius:20px;padding:28px 36px}
+    .withdraw-card h2{font-size:18px;color:#a33b4c;margin:0 0 8px}
+    .withdraw-card p{color:#8b94b0;font-size:13px;line-height:1.7}
+    .withdraw-card summary{cursor:pointer;color:#b42335;font-weight:700;padding:10px 0}
+    .withdraw-card details[open] summary{margin-bottom:12px}
+    .withdraw-card .danger-btn{background:#b42335;color:white;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;font:inherit;font-weight:700}
+    .withdraw-card .danger-btn:hover{background:#931c2c}
+    .withdraw-card .confirm-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;margin:16px 0}
+    @media(max-width:600px){.withdraw-card{padding:24px}}
+  </style>
+</head>
+<body>
+  <div th:replace="~{fragments/header :: header}"></div>
+  <main class="profile-wrap">
+    <section class="profile-card">
+      <h1>내 정보 수정</h1>
+      <p class="profile-sub">닉네임과 비밀번호를 안전하게 변경할 수 있어요.</p>
+      <div class="profile-alert success" th:if="${param.success != null}">회원정보가 수정되었습니다.</div>
+      <div class="profile-alert error" th:if="${error != null}" th:text="${error}"></div>
+      <form th:if="${user != null}" th:action="@{/user/profile}" method="post">
+        <div class="profile-field"><label for="email">이메일</label>
+          <input id="email" type="email" th:value="${user.email}" readonly>
+          <div class="profile-hint">이메일은 계정 식별 및 프로젝트 초대에 사용되므로 여기서는 변경할 수 없습니다.</div>
+        </div>
+        <div class="profile-field"><label for="nickname">닉네임</label>
+          <input id="nickname" name="nickname" type="text" th:value="${user.nickname}" maxlength="50" required>
+        </div>
+        <hr class="profile-divider">
+        <div class="profile-field"><label for="newPassword">새 비밀번호 (선택)</label>
+          <input id="newPassword" name="newPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password">
+          <div class="profile-hint">비밀번호를 변경하지 않으려면 비워두세요. 변경 시 8~72자로 입력해 주세요.</div>
+        </div>
+        <div class="profile-field"><label for="newPasswordConfirm">새 비밀번호 확인</label>
+          <input id="newPasswordConfirm" name="newPasswordConfirm" type="password" autocomplete="new-password">
+        </div>
+        <hr class="profile-divider">
+        <div class="profile-field"><label for="currentPassword">현재 비밀번호 <span style="color:#c54b5c">*</span></label>
+          <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required>
+          <div class="profile-hint">정보 변경 전 본인 확인을 위해 필요합니다.</div>
+        </div>
+        <div class="profile-actions">
+          <a class="btn btn-outline" th:href="@{/}">취소</a>
+          <button class="btn btn-primary" type="submit">변경사항 저장</button>
+        </div>
+      </form>
+    </section>
+    <section class="withdraw-card" th:if="${user != null}">
+      <h2>회원탈퇴</h2>
+      <p>탈퇴하면 이 계정으로 로그인할 수 없습니다. 기존 프로젝트의 이슈·댓글 등 협업 기록은 유지됩니다.<br>
+         본인이 소유한 프로젝트가 있다면 먼저 프로젝트를 삭제해야 탈퇴할 수 있습니다.</p>
+      <div class="profile-alert error" th:if="${withdrawError != null}" th:text="${withdrawError}"></div>
+      <details th:attr="open=${withdrawError != null} ? 'open' : null">
+        <summary>회원탈퇴 진행</summary>
+        <form th:action="@{/user/withdraw}" method="post" onsubmit="return confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.');">
+          <div class="profile-field"><label for="withdrawPassword">현재 비밀번호</label>
+            <input id="withdrawPassword" name="withdrawPassword" type="password" autocomplete="current-password" required>
+          </div>
+          <label class="confirm-row"><input type="checkbox" name="withdrawConfirm" value="yes" required>
+            <span>탈퇴 후 로그인할 수 없으며 협업 기록은 보존됨을 확인했습니다.</span></label>
+          <button type="submit" class="danger-btn">회원탈퇴 확정</button>
+        </form>
+      </details>
+    </section>
+  </main>
+</body>
+</html>

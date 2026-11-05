@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="ko" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>테스트 케이스 | IDI!</title><link rel="stylesheet" th:href="@{/css/common.css}"><link rel="stylesheet" th:href="@{/css/project-detail.css}"><link rel="stylesheet" th:href="@{/css/testcase.css}"></head><body>
+<div th:replace="~{fragments/header :: header}"></div><div class="app-shell"><div th:replace="~{fragments/sidebar :: sidebar}"></div><main class="dashboard-main project-detail-main"><div class="tc-wrap">
+<a th:href="@{/project/detail(projectId=${tc.projectId})}">← 프로젝트로 돌아가기</a>
+<div class="tc-heading"><div><span class="eyebrow" th:text="${tc.caseCode}">TC-001</span><h1 th:text="${tc.title}">테스트 케이스</h1></div><span class="tc-result" th:classappend="' tc-result-' + ${tc.result}" th:text="${tc.result == '0' ? 'PASS' : (tc.result == '1' ? 'FAIL' : (tc.result == '2' ? 'BLOCK' : (tc.result == '3' ? 'N/A' : 'NO RUN')))}">NO RUN</span></div>
+<section class="dashboard-card tc-detail"><h2>사전 조건</h2><p th:text="${#strings.isEmpty(tc.precondition) ? '없음' : tc.precondition}"></p><h2>테스트 절차</h2><p th:text="${#strings.isEmpty(tc.testSteps) ? '없음' : tc.testSteps}"></p><h2>기대 결과</h2><p th:text="${#strings.isEmpty(tc.expectedResult) ? '없음' : tc.expectedResult}"></p><h2>비고</h2><p th:text="${#strings.isEmpty(tc.remarks) ? '없음' : tc.remarks}"></p></section>
+<section class="dashboard-card tc-detail" style="margin-top:20px"><h2>테스트 정보</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;color:#5d668a">
+<div><strong>작성자</strong><p th:text="${tc.authorNickname != null ? tc.authorNickname : '탈퇴/알 수 없는 회원'}">작성자</p></div>
+<div><strong>등록일</strong><p th:text="${tc.createdAt != null ? #temporals.format(tc.createdAt,'yyyy-MM-dd HH:mm') : '-'}">-</p></div>
+<div><strong>마지막 실행일</strong><p th:text="${tc.executedAt != null ? #temporals.format(tc.executedAt,'yyyy-MM-dd HH:mm') : '미실행'}">미실행</p></div>
+</div></section>
+<div class="tc-actions" th:if="${canEditTc}"><a class="btn btn-primary" th:href="@{/testcase/edit(testCaseId=${tc.testCaseId})}">수정</a><form method="post" th:action="@{/testcase/delete}" onsubmit="return confirm('테스트 케이스를 영구 삭제하시겠습니까?');"><input type="hidden" name="testCaseId" th:value="${tc.testCaseId}"><button class="btn btn-outline" type="submit">삭제</button></form></div>
+</div></main></div></body></html>

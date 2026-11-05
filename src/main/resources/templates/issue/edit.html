@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이슈 수정 | IDI!</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/issue-detail.css}">
+    <style>
+        .issue-edit-card { max-width: 760px; }
+        .issue-edit-form { display: flex; flex-direction: column; gap: 18px; }
+        .issue-edit-field { display: flex; flex-direction: column; gap: 8px; }
+        .issue-edit-field label { font-size: 13px; font-weight: 700; }
+        .issue-edit-field input,
+        .issue-edit-field select,
+        .issue-edit-field textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dfe2ee;
+            border-radius: 9px;
+            font: inherit;
+            box-sizing: border-box;
+        }
+        .issue-edit-field textarea { min-height: 180px; resize: vertical; }
+        .issue-edit-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .issue-edit-error { color: #dc2626; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <main class="dashboard-main">
+        <div class="issue-detail-header">
+            <div>
+                <span class="eyebrow">EDIT ISSUE</span>
+                <h1>이슈 수정</h1>
+                <p>이슈의 기본 정보를 수정합니다.</p>
+            </div>
+        </div>
+
+        <section class="dashboard-card issue-edit-card">
+
+            <p class="issue-edit-error"
+               th:if="${error != null}"
+               th:text="${error}"></p>
+
+            <form class="issue-edit-form"
+                  th:action="@{/issue/edit(issueId=${issue.issueId})}"
+                  method="post">
+
+                <div class="issue-edit-field">
+                    <label for="title">제목</label>
+                    <input type="text" id="title" name="title"
+                           maxlength="100" required
+                           th:value="${issue.title}">
+                </div>
+
+                <div class="issue-edit-field">
+                    <label for="type">유형</label>
+                    <select id="type" name="type">
+                        <option value="0" th:selected="${issue.type == '0'}">TASK</option>
+                        <option value="1" th:selected="${issue.type == '1'}">BUG</option>
+                    </select>
+                </div>
+
+                <div class="issue-edit-field">
+                    <label for="content">상세 내용</label>
+                    <textarea id="content" name="content"
+                              th:text="${issue.content}"></textarea>
+                </div>
+
+
+                <div class="issue-edit-field">
+                    <label for="assigneeId">담당자</label>
+                    <select id="assigneeId" name="assigneeId">
+                        <option value="" th:selected="${issue.assigneeId == null}">미배정</option>
+                        <option th:each="member : ${memberList}" th:value="${member.userId}" th:text="${member.nickname} + ' (' + ${member.email} + ')'" th:selected="${issue.assigneeId != null and issue.assigneeId == member.userId}">멤버</option>
+                    </select>
+                </div>
+
+                <div class="issue-edit-field">
+                    <label for="dueDate">마감일</label>
+                    <input type="date" id="dueDate" name="dueDate"
+                           th:value="${issue.dueDate}">
+                </div>
+
+                <div class="issue-edit-actions">
+                    <a class="btn btn-outline"
+                       th:href="@{/issue/detail(issueId=${issue.issueId})}">
+                        취소
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        수정 완료
+                    </button>
+                </div>
+
+            </form>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>
