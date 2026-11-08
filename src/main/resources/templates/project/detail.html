@@ -58,7 +58,7 @@
 	          <form th:if="${canManage}"
 	                th:action="@{/project/status}"
 	                method="post"
-	                onsubmit="return confirm('프로젝트 상태를 변경하시겠습니까?');">
+	                class="project-status-form">
 
 	              <input type="hidden" name="projectId" th:value="${project.projectId}">
 	              <input type="hidden" name="status" th:value="${isCompleted ? '0' : '1'}">
@@ -150,8 +150,7 @@
           <div class="member-popover-panel" id="memberPopoverPanel" hidden>
             <div class="member-popover-heading">
               <strong>프로젝트 멤버</strong>
-              <button type="button" class="member-popover-add" th:if="${canManage and !isCompleted}"
-                      onclick="document.getElementById('memberPopoverPanel').hidden = true; document.getElementById('memberPopoverTrigger').setAttribute('aria-expanded','false'); document.getElementById('memberModal').showModal()">+ 멤버 추가</button>
+              <button type="button" class="member-popover-add" th:if="${canManage and !isCompleted}">+ 멤버 추가</button>
             </div>
             <div class="member-popover-scroll">
 	      <div class="member-empty"
@@ -176,7 +175,7 @@
 
 	                  <form th:if="${canManage and !isCompleted and member.userId != project.ownerId}"
 	                        th:action="@{/project/member/delete}" method="post"
-	                        onsubmit="return confirm('이 멤버를 삭제하시겠습니까?');">
+	                        class="member-delete-form">
 	                      <input type="hidden" name="projectId"
 	                             th:value="${project.projectId}">
 	                      <input type="hidden" name="memberId"
@@ -222,9 +221,12 @@
             <a th:href="@{/testcase/detail(testCaseId=${tc.testCaseId})}" th:text="${tc.title}">테스트 제목</a>
             <form th:if="${canEditTc and !isCompleted}" th:action="@{/testcase/result}" method="post" class="tc-inline-form">
               <input type="hidden" name="testCaseId" th:value="${tc.testCaseId}">
-              <select name="result" class="tc-result tc-result-select"
-                      th:classappend="' tc-result-' + ${tc.result}"
-                      onchange="this.form.submit()" aria-label="테스트 케이스 실행 결과 변경">
+			  <select name="result"
+			  		class="tc-result tc-result-select project-inline-select"
+			  		th:classappend="' tc-result-' + ${tc.result}"
+			  		th:attr="data-value=${tc.result}"
+			  		th:data-ajax-url="@{/testcase/result/ajax}"
+			  		aria-label="테스트 케이스 실행 결과 변경">
                 <option value="0" th:selected="${tc.result == '0'}">PASS</option>
                 <option value="1" th:selected="${tc.result == '1'}">FAIL</option>
                 <option value="2" th:selected="${tc.result == '2'}">BLOCK</option>
@@ -297,9 +299,11 @@
                   <span th:if="${isCompleted}" th:text="${issue.priority == '0' ? '낮음' : (issue.priority == '1' ? '보통' : '높음')}"></span>
                   <form th:if="${!isCompleted}" th:action="@{/issue/priority}" method="post">
                       <input type="hidden" name="issueId" th:value="${issue.issueId}">
-                      <select name="priority" class="inline-issue-select"
-                          th:attr="data-value=${issue.priority}"
-                              aria-label="이슈 우선순위 변경" onchange="this.form.submit()">
+					  <select name="priority"
+					  		class="inline-issue-select project-inline-select"
+					 		th:attr="data-value=${issue.priority}"
+				 			th:data-ajax-url="@{/issue/priority/ajax}"
+					  		aria-label="이슈 우선순위 변경">
                           <option value="0" th:selected="${issue.priority == '0'}">낮음</option>
                           <option value="1" th:selected="${issue.priority == '1'}">보통</option>
                           <option value="2" th:selected="${issue.priority == '2'}">높음</option>
@@ -311,8 +315,11 @@
                   <span th:if="${isCompleted}" th:text="${issue.status == '0' ? '대기' : (issue.status == '1' ? '진행 중' : (issue.status == '2' ? '검토 대기' : '완료'))}"></span>
                   <form th:if="${!isCompleted}" th:action="@{/issue/status}" method="post">
                       <input type="hidden" name="issueId" th:value="${issue.issueId}">
-                      <select name="status" class="inline-issue-select" th:attr="data-value=${issue.status}"
-                              aria-label="이슈 상태 변경" onchange="this.form.submit()">
+					  <select name="status"
+					  		class="inline-issue-select project-inline-select"
+					  		th:attr="data-value=${issue.status}"
+					  		th:data-ajax-url="@{/issue/status/ajax}"
+					  		aria-label="이슈 상태 변경">
                           <option value="0" th:selected="${issue.status == '0'}">대기</option>
                           <option value="1" th:selected="${issue.status == '1'}">진행 중</option>
                           <option value="2" th:selected="${issue.status == '2'}">검토 대기</option>
@@ -343,7 +350,7 @@
           <div class="member-modal-heading">
               <h2>멤버 추가</h2>
               <button type="button" class="member-modal-close"
-                      onclick="document.getElementById('memberModal').close()"
+                      
                       aria-label="닫기">×</button>
           </div>
 
@@ -363,82 +370,13 @@
           </select>
 
           <div class="member-modal-footer">
-              <button type="button" class="btn btn-outline"
-                      onclick="document.getElementById('memberModal').close()">
+              <button type="button" class="btn btn-outline member-modal-cancel">
                   취소
               </button>
               <button type="submit" class="btn btn-primary">멤버 추가</button>
           </div>
       </form>
   </dialog>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const PAGE_SIZE = 8;
-      const tabs = Array.from(document.querySelectorAll('[data-work-tab]'));
-      const configs = {
-        issue: { panel: document.getElementById('issue-panel'), selector: '.issue-list-row', nav: document.getElementById('issue-pagination'), page: 1 },
-        tc: { panel: document.getElementById('tc-panel'), selector: '.tc-row', nav: document.getElementById('tc-pagination'), page: 1 }
-      };
-      function renderPage(type) {
-        const cfg = configs[type];
-        const rows = Array.from(cfg.panel.querySelectorAll(cfg.selector));
-        const total = Math.ceil(rows.length / PAGE_SIZE);
-        cfg.page = Math.min(Math.max(cfg.page, 1), Math.max(total, 1));
-        rows.forEach((row, i) => { row.hidden = i < (cfg.page - 1) * PAGE_SIZE || i >= cfg.page * PAGE_SIZE; });
-        cfg.nav.replaceChildren();
-        if (total <= 1) return;
-        function addButton(label, target, disabled, current) {
-          const btn = document.createElement('button');
-          btn.type = 'button'; btn.textContent = label;
-          btn.className = 'work-page-button' + (current ? ' is-active' : '');
-          btn.disabled = disabled;
-          if (current) btn.setAttribute('aria-current', 'page');
-          btn.addEventListener('click', () => { cfg.page = target; renderPage(type); });
-          cfg.nav.appendChild(btn);
-        }
-        addButton('이전', cfg.page - 1, cfg.page === 1, false);
-        for (let n = 1; n <= total; n++) addButton(String(n), n, false, n === cfg.page);
-        addButton('다음', cfg.page + 1, cfg.page === total, false);
-      }
-      function activate(type) {
-        Object.entries(configs).forEach(([name, cfg]) => { cfg.panel.hidden = name !== type; });
-        tabs.forEach(tab => {
-          const selected = tab.dataset.workTab === type;
-          tab.classList.toggle('is-active', selected);
-          tab.setAttribute('aria-selected', String(selected));
-          tab.tabIndex = selected ? 0 : -1;
-        });
-        renderPage(type);
-      }
-      tabs.forEach(tab => tab.addEventListener('click', () => activate(tab.dataset.workTab)));
-      tabs.forEach((tab, index) => tab.addEventListener('keydown', event => {
-        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-        event.preventDefault();
-        const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-        activate(next.dataset.workTab); next.focus();
-      }));
-      renderPage('issue'); renderPage('tc'); activate('issue');
-    });
-  </script>
-<script>
-  (function () {
-    const anchor = document.getElementById('memberPopoverAnchor');
-    const trigger = document.getElementById('memberPopoverTrigger');
-    const panel = document.getElementById('memberPopoverPanel');
-    if (!anchor || !trigger || !panel) return;
-    function close() { panel.hidden = true; trigger.setAttribute('aria-expanded', 'false'); }
-    trigger.addEventListener('click', function () {
-      const opening = panel.hidden;
-      panel.hidden = !opening;
-      trigger.setAttribute('aria-expanded', String(opening));
-    });
-    document.addEventListener('click', function (event) {
-      if (!anchor.contains(event.target)) close();
-    });
-    document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') { close(); trigger.focus(); }
-    });
-  })();
-</script>
+  <script th:src="@{/js/project-detail.js}" defer></script>
 </body>
 </html>

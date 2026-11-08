@@ -1,15 +1,77 @@
-<!DOCTYPE html><html lang="ko" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>테스트 케이스 | IDI!</title><link rel="stylesheet" th:href="@{/css/common.css}"><link rel="stylesheet" th:href="@{/css/project-detail.css}"><link rel="stylesheet" th:href="@{/css/testcase.css}"></head><body>
-<div th:replace="~{fragments/header :: header}"></div><div class="app-shell"><div th:replace="~{fragments/sidebar :: sidebar}"></div><main class="dashboard-main project-detail-main">
-<div class="tc-wrap"><a th:href="@{/project/detail(projectId=${tc.projectId})}">← 프로젝트로 돌아가기</a><h1 th:text="${editing} ? '테스트 케이스 수정' : '테스트 케이스 등록'">테스트 케이스</h1>
-<p class="tc-error" th:if="${error}" th:text="${error}"></p>
-<form class="dashboard-card tc-form" method="post" th:action="${editing} ? @{/testcase/edit} : @{/testcase/create}">
-<input type="hidden" name="projectId" th:value="${tc.projectId}"><input th:if="${editing}" type="hidden" name="testCaseId" th:value="${tc.testCaseId}">
-<label>TC 코드 <input th:if="${!editing}" name="caseCode" maxlength="30" required th:value="${tc.caseCode}" placeholder="LOGIN-001"><input th:if="${editing}" th:value="${tc.caseCode}" readonly></label>
-<label>제목 <input name="title" maxlength="200" required th:value="${tc.title}" placeholder="정상 계정 로그인 확인"></label>
-<label>사전 조건 <textarea name="precondition" rows="3" th:text="${tc.precondition}"></textarea></label>
-<label>테스트 절차 <textarea name="testSteps" rows="5" th:text="${tc.testSteps}"></textarea></label>
-<label>기대 결과 <textarea name="expectedResult" rows="3" th:text="${tc.expectedResult}"></textarea></label>
-<label>실행 결과 <select name="result"><option value="4" th:selected="${tc.result == '4'}">NO RUN</option><option value="0" th:selected="${tc.result == '0'}">PASS</option><option value="1" th:selected="${tc.result == '1'}">FAIL</option><option value="2" th:selected="${tc.result == '2'}">BLOCK</option><option value="3" th:selected="${tc.result == '3'}">N/A</option></select></label>
-<label>비고 <textarea name="remarks" rows="3" th:text="${tc.remarks}"></textarea></label>
-<div class="tc-actions"><a class="btn btn-outline" th:href="@{/project/detail(projectId=${tc.projectId})}">취소</a><button class="btn btn-primary" type="submit" th:text="${editing} ? '수정하기' : '등록하기'">저장</button></div>
-</form></div></main></div></body></html>
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>테스트 케이스 | IDI!</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/project-detail.css}">
+  <link rel="stylesheet" th:href="@{/css/testcase.css}">
+  <link rel="stylesheet" th:href="@{/css/work-form.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="app-shell">
+  <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+  <main class="dashboard-main project-detail-main work-form-main">
+    <div class="work-form-wrap">
+      <nav class="work-form-breadcrumb" aria-label="현재 위치">
+        <a th:href="@{/project/detail(projectId=${tc.projectId})}">프로젝트 상세</a><span aria-hidden="true">›</span>
+        <span th:text="${editing} ? '테스트 케이스 수정' : '테스트 케이스 등록'">테스트 케이스 등록</span>
+      </nav>
+      <header class="work-form-heading">
+        <span class="eyebrow">TEST CASE MANAGEMENT</span>
+        <h1 th:text="${editing} ? '테스트 케이스 수정' : '새 테스트 케이스 등록'">새 테스트 케이스 등록</h1>
+        <p th:text="${editing} ? '테스트 케이스의 내용을 수정합니다.' : '테스트 절차와 기대 결과를 등록합니다.'">테스트 절차와 기대 결과를 등록합니다.</p>
+      </header>
+      <p class="work-form-error" th:if="${error}" th:text="${error}"></p>
+      <section class="dashboard-card work-form-card">
+        <form class="work-form" method="post" th:action="${editing} ? @{/testcase/edit} : @{/testcase/create}">
+          <input type="hidden" name="projectId" th:value="${tc.projectId}">
+          <input th:if="${editing}" type="hidden" name="testCaseId" th:value="${tc.testCaseId}">
+          <div class="work-field">
+            <label for="caseCode">TC 코드 <span class="work-required" th:if="${!editing}">*</span></label>
+            <input id="caseCode" th:if="${!editing}" name="caseCode" maxlength="30" required th:value="${tc.caseCode}" placeholder="LOGIN-001">
+            <input id="caseCode" th:if="${editing}" th:value="${tc.caseCode}" readonly>
+          </div>
+          <div class="work-field">
+            <label for="title">제목 <span class="work-required">*</span></label>
+            <input id="title" name="title" maxlength="200" required th:value="${tc.title}" placeholder="정상 계정 로그인 확인">
+          </div>
+          <div class="work-field">
+            <label for="precondition">사전 조건</label>
+            <textarea id="precondition" name="precondition" rows="3" th:text="${tc.precondition}"></textarea>
+          </div>
+          <div class="work-field">
+            <label for="testSteps">테스트 절차</label>
+            <textarea id="testSteps" name="testSteps" rows="5" th:text="${tc.testSteps}"></textarea>
+          </div>
+          <div class="work-field">
+            <label for="expectedResult">기대 결과</label>
+            <textarea id="expectedResult" name="expectedResult" rows="3" th:text="${tc.expectedResult}"></textarea>
+          </div>
+          <div class="work-field">
+            <label for="result">실행 결과</label>
+            <select id="result" name="result">
+              <option value="4" th:selected="${tc.result == '4'}">NO RUN</option>
+              <option value="0" th:selected="${tc.result == '0'}">PASS</option>
+              <option value="1" th:selected="${tc.result == '1'}">FAIL</option>
+              <option value="2" th:selected="${tc.result == '2'}">BLOCK</option>
+              <option value="3" th:selected="${tc.result == '3'}">N/A</option>
+            </select>
+          </div>
+          <div class="work-field">
+            <label for="remarks">비고</label>
+            <textarea id="remarks" name="remarks" rows="3" th:text="${tc.remarks}"></textarea>
+          </div>
+          <div class="work-form-actions">
+            <a class="btn btn-outline" th:href="@{/project/detail(projectId=${tc.projectId})}">취소</a>
+            <button class="btn btn-primary" type="submit" th:text="${editing} ? '수정하기' : '등록하기'">등록하기</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

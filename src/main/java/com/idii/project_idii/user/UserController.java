@@ -13,76 +13,152 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.util.Map;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 @RequestMapping("/user")
 @Controller
 public class UserController {
 	
 	private final MainController mainController;
 	private final UserService userService;
-	public UserController(UserService userService, MainController mainController) {
-		this.userService = userService;
-		this.mainController = mainController;
+	private final EmailVerificationService emailVerificationService;
+	
+	public UserController(
+	        UserService userService,
+	        MainController mainController,
+	        EmailVerificationService emailVerificationService) {
+	
+	    this.userService = userService;
+	    this.mainController = mainController;
+	    this.emailVerificationService = emailVerificationService;
 	}
 
 	@GetMapping("/signup")
     public String signup() {
         return "user/signup";
     }
+
+	@GetMapping("/check-email")
+	@ResponseBody
+	public Map<String, Object> checkEmail(
+	        @RequestParam("email") String email) {
+
+	    String normalizedEmail = email.trim();
+	
+	    if (normalizedEmail.length() > 254
+	            || !normalizedEmail.matches(
+	                "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+	
+	        return Map.of(
+	                "available", false,
+	                "message", "올바른 이메일 형식으로 입력해 주세요."
+	        );
+	    }
+	
+	    try {
+	        boolean available =
+	                userService.countUserByEmail(normalizedEmail) == 0;
+	
+	        return Map.of(
+	                "available", available,
+	                "message", available
+	                        ? "사용 가능한 이메일입니다."
+	                        : "이미 가입된 이메일입니다."
+	        );
+		} catch (Exception e) {
+		    e.printStackTrace(); // 실제 오류 원인을 콘솔에 출력
+		
+		    return Map.of(
+		        "available", false,
+		        "message", "이메일 확인 중 오류가 발생했습니다."
+		    );
+		}
+	}
 	
 	@PostMapping("/signup")
-	public String signupPro(HttpServletRequest request, Model model) {
-
+	public String signupPro(
+	        HttpServletRequest request,
+	        HttpSession session,
+	        Model model) {
+	
 	    String email = request.getParameter("email");
 	    String password = request.getParameter("password");
 	    String nickname = request.getParameter("nickname");
 	    String passwordConfirm = request.getParameter("passwordConfirm");
-
-	    if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
-	        model.addAttribute("error", "올바른 이메일 형식으로 입력해 주세요.");
+	
+	    if (email == null
+	            || email.trim().length() > 254
+	            || !email.trim().matches(
+	                "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+	
+	        model.addAttribute("error",
+	                "올바른 이메일 형식으로 입력해 주세요.");
 	        return "user/signup";
 	    }
-
-	    if (password == null || password.length() < 8 || password.length() > 20) {
-	        model.addAttribute("error", "비밀번호는 8~20자로 입력해 주세요.");
+	
+	    email = email.trim();
+	
+	    if (password == null
+	            || password.length() < 8
+	            || password.length() > 20) {
+	
+	        model.addAttribute("error",
+	                "비밀번호는 8~20자로 입력해 주세요.");
 	        return "user/signup";
 	    }
-
+	
 	    if (!password.equals(passwordConfirm)) {
-	        model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+	        model.addAttribute("error",
+	                "비밀번호가 일치하지 않습니다.");
 	        return "user/signup";
 	    }
-
-	    if (nickname == null || nickname.trim().isEmpty()) {
-	        model.addAttribute("error", "닉네임을 입력해 주세요.");
+	
+	    if (nickname == null
+	            || nickname.trim().isEmpty()
+	            || nickname.trim().length() > 30) {
+	
+	        model.addAttribute("error",
+	                "닉네임은 1~30자로 입력해 주세요.");
 	        return "user/signup";
 	    }
-
+	
+	    // 서버에서 이메일 인증 여부 확인
+	    if (!emailVerificationService.isVerified(email, session)) {
+	        model.addAttribute("error",
+	                "이메일 인증을 완료해 주세요.");
+	        return "user/signup";
+	    }
+	
 	    User user = new User();
-	    user.setEmail(email.trim());
+	    user.setEmail(email);
 	    user.setPassword(password);
 	    user.setNickname(nickname.trim());
-
+	
 	    try {
-	        int cnt = userService.countUserByEmail(user.getEmail());
-
+	        int cnt = userService.countUserByEmail(email);
+	
 	        if (cnt > 0) {
 	            model.addAttribute("error", "이미 가입된 이메일입니다.");
 	            return "user/signup";
 	        }
-
+	
 	        int result = userService.addUser(user);
-
+	
 	        if (result == 1) {
+	            emailVerificationService.clearVerification(session);
 	            return "redirect:/user/login";
 	        }
-
+	
 	        model.addAttribute("error", "회원가입에 실패했습니다.");
-
+	
 	    } catch (Exception e) {
 	        e.printStackTrace();
-	        model.addAttribute("error", "오류가 발생했습니다. 다시 시도해 주세요.");
+	        model.addAttribute("error",
+	                "오류가 발생했습니다. 다시 시도해 주세요.");
 	    }
-
+	
 	    return "user/signup";
 	}
 	

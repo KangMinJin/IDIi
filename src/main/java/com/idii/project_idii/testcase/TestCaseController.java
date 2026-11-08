@@ -1,11 +1,18 @@
 package com.idii.project_idii.testcase;
 
 import org.springframework.stereotype.Controller;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -196,4 +203,45 @@ public class TestCaseController {
         return projectUrl(existing.getProjectId());
     }
 
+    @PostMapping("/result/ajax")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateResultAjax(
+            @RequestParam("testCaseId") long testCaseId,
+            @RequestParam("result") String result,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+
+        if (!List.of("0", "1", "2", "3", "4").contains(result)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "올바르지 않은 테스트 결과입니다."));
+        }
+
+        TestCase existing = testCaseService.getTestCase(testCaseId, userId);
+
+        if (existing == null ||
+                !testCaseService.canEdit(existing.getProjectId(), userId)) {
+
+            return ResponseEntity.status(403)
+                    .body(Map.of("success", false, "message", "테스트 결과를 변경할 권한이 없습니다."));
+        }
+
+        int count = testCaseService.updateTestCaseResult(
+                testCaseId, result, userId
+        );
+
+        if (count != 1) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "테스트 결과 저장에 실패했습니다."));
+        }
+
+        return ResponseEntity.ok(
+                Map.of("success", true, "value", result)
+        );
+    }
 }

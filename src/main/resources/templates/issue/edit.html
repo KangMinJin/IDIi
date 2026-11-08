@@ -7,7 +7,10 @@
     <link rel="stylesheet" th:href="@{/css/common.css}">
     <link rel="stylesheet" th:href="@{/css/issue-detail.css}">
     <style>
-        .issue-edit-card { max-width: 760px; }
+        .issue-edit-card { width: 100%; max-width: 800px; margin: 0 auto 22px; }
+        .issue-edit-heading { width: 100%; max-width: 800px; margin: 0 auto 28px; }
+        .issue-edit-heading h1 { font-size: 32px; letter-spacing: -1.1px; margin: 14px 0 9px; }
+        .issue-edit-heading p { color: var(--muted); font-size: 14px; margin: 0; }
         .issue-edit-form { display: flex; flex-direction: column; gap: 18px; }
         .issue-edit-field { display: flex; flex-direction: column; gap: 8px; }
         .issue-edit-field label { font-size: 13px; font-weight: 700; }
@@ -24,6 +27,8 @@
         .issue-edit-field textarea { min-height: 180px; resize: vertical; }
         .issue-edit-actions { display: flex; gap: 10px; justify-content: flex-end; }
         .issue-edit-error { color: #dc2626; font-size: 13px; }
+        .issue-edit-field input:focus, .issue-edit-field select:focus, .issue-edit-field textarea:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(89,100,220,.1); }
+        @media (max-width: 600px) { .issue-edit-heading h1 { font-size: 26px; } .issue-edit-actions { flex-wrap: wrap; } }
     </style>
 </head>
 <body>
@@ -34,7 +39,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
     <main class="dashboard-main">
-        <div class="issue-detail-header">
+        <div class="issue-edit-heading">
             <div>
                 <span class="eyebrow">EDIT ISSUE</span>
                 <h1>이슈 수정</h1>

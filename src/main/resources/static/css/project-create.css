@@ -1,0 +1,32 @@
+/* 프로젝트 생성 화면 전용: common.css의 헤더/사이드바/버튼 재사용 */
+.project-create-main { min-width: 0; }
+.project-create-content { width: 100%; max-width: 880px; margin: 0 auto; }
+.project-create-heading { margin-bottom: 28px; }
+.project-create-heading h1 { font-size: 32px; letter-spacing: -1.1px; margin: 15px 0 10px; }
+.project-create-heading p { margin: 0; font-size: 15px; color: var(--muted); }
+.project-create-card { padding: 36px 40px; }
+.project-create-field { min-width: 0; margin-bottom: 26px; }
+.project-create-field label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 700; }
+.project-create-required { color: var(--purple); }
+.project-create-field input, .project-create-field textarea {
+    display: block; width: 100%; padding: 14px 16px; border: 1px solid #dce0ed;
+    border-radius: 10px; background: #fff; color: var(--ink); font: inherit; font-size: 14px;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.project-create-field input:focus, .project-create-field textarea:focus {
+    border-color: var(--purple); box-shadow: 0 0 0 3px rgba(89,100,220,.1);
+}
+.project-create-field input::placeholder, .project-create-field textarea::placeholder { color: #a0a7bf; }
+.project-create-field textarea { min-height: 150px; resize: vertical; }
+.project-create-hint { margin: 8px 0 0; font-size: 12px; color: #969daf; }
+.project-create-date-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.project-create-date-row .project-create-field { margin-bottom: 0; }
+.project-create-error { margin: 18px 0 0; color: #dc3545; font-size: 13px; }
+.project-create-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 34px; }
+@media (max-width: 600px) {
+    .project-create-heading h1 { font-size: 26px; }
+    .project-create-card { padding: 24px 18px; }
+    .project-create-date-row { grid-template-columns: 1fr; gap: 0; }
+    .project-create-date-row .project-create-field { margin-bottom: 22px; }
+    .project-create-actions { flex-wrap: wrap; }
+}

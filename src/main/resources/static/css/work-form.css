@@ -1,0 +1,25 @@
+/* IDI! issue / test case form pages only */
+.work-form-main { min-width: 0; }
+.work-form-wrap { width: 100%; max-width: 820px; margin: 0 auto; }
+.work-form-breadcrumb { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; color: #929bb7; font-size: 13px; }
+.work-form-breadcrumb a { color: var(--purple); font-weight: 700; }
+.work-form-heading { margin-bottom: 26px; }
+.work-form-heading .eyebrow { font-size: 11px; padding: 7px 12px; }
+.work-form-heading h1 { margin: 15px 0 9px; font-size: 32px; letter-spacing: -1.1px; line-height: 1.35; }
+.work-form-heading p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.work-form-card { padding: 38px; }
+.work-form { display: flex; flex-direction: column; gap: 24px; }
+.work-field { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.work-field label { color: var(--ink); font-size: 14px; font-weight: 700; }
+.work-required { color: var(--purple); }
+.work-field input, .work-field textarea, .work-field select { display: block; width: 100%; min-width: 0; padding: 13px 15px; border: 1px solid #dce0ed; border-radius: 10px; background: #fff; color: var(--ink); font: inherit; font-size: 14px; line-height: 1.6; outline: none; }
+.work-field input, .work-field select { min-height: 48px; }
+.work-field textarea { resize: vertical; min-height: 95px; }
+.work-field input::placeholder, .work-field textarea::placeholder { color: #a0a7bf; }
+.work-field input:focus, .work-field textarea:focus, .work-field select:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(89,100,220,.10); }
+.work-field input[readonly] { background: #f7f8fc; color: #78809a; }
+.work-field-row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+.work-form-actions { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 22px; border-top: 1px solid var(--line); }
+.work-form-actions .btn { min-width: 110px; }
+.work-form-error { padding: 13px 16px; margin: 0 0 18px; border: 1px solid #fecaca; border-radius: 10px; color: #b91c1c; background: #fff7f7; font-size: 13px; }
+@media (max-width: 640px) { .work-form-heading h1 { font-size: 26px; } .work-form-card { padding: 22px 18px; } .work-field-row { grid-template-columns: 1fr; } .work-form-actions .btn { flex: 1; } }

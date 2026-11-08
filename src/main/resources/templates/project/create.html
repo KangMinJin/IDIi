@@ -1,262 +1,62 @@
-
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>프로젝트 생성 | IDI!</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: #f6f7fc;
-            color: #252a43;
-            font-family: Arial, sans-serif;
-        }
-
-        .header {
-            height: 76px;
-            padding: 0 7%;
-            background: white;
-            border-bottom: 1px solid #e7e9f2;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            font-size: 30px;
-            font-weight: bold;
-            color: #5b61d6;
-            text-decoration: none;
-        }
-
-        .header-label {
-            color: #7c849a;
-            font-size: 14px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 760px;
-            margin: 65px auto;
-            padding: 0 20px;
-        }
-
-        .page-title {
-            font-size: 30px;
-            margin-bottom: 10px;
-        }
-
-        .page-description {
-            color: #858ca0;
-            font-size: 15px;
-            margin-bottom: 30px;
-        }
-
-        .form-card {
-            background: white;
-            border: 1px solid #e9eaf3;
-            border-radius: 16px;
-            padding: 38px;
-            box-shadow: 0 10px 30px rgba(60, 65, 120, 0.05);
-        }
-
-        .form-group {
-            margin-bottom: 26px;
-        }
-
-        label {
-            display: block;
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .required {
-            color: #6556d9;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 13px 15px;
-            border: 1px solid #dce0ed;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            outline: none;
-            background: white;
-        }
-
-        input:focus, textarea:focus {
-            border-color: #6556d9;
-            box-shadow: 0 0 0 3px rgba(101, 86, 217, 0.08);
-        }
-
-        textarea {
-            min-height: 130px;
-            resize: vertical;
-        }
-
-        .helper-text {
-            color: #969daf;
-            font-size: 12px;
-            margin-top: 7px;
-        }
-
-        .date-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .error {
-            color: #e05252;
-            font-size: 13px;
-            margin-bottom: 18px;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 30px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 13px 23px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-cancel {
-            background: white;
-            color: #687086;
-            border: 1px solid #dce0ed;
-        }
-
-        .btn-submit {
-            background: #5b61d6;
-            color: white;
-            border: 1px solid #5b61d6;
-        }
-
-        .btn-submit:hover {
-            background: #494fbe;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                margin: 35px auto;
-            }
-
-            .form-card {
-                padding: 24px;
-            }
-
-            .date-row {
-                grid-template-columns: 1fr;
-            }
-
-            .page-title {
-                font-size: 25px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/project-create.css}">
 </head>
-
 <body>
+    <div th:replace="~{fragments/header :: header}"></div>
 
-    <header class="header">
-        <a th:href="@{/}" class="logo">IDI!</a>
-        <span class="header-label">프로젝트 관리</span>
-    </header>
+    <div class="app-shell">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
-    <main class="container">
-
-        <h1 class="page-title">새 프로젝트 만들기</h1>
-        <p class="page-description">
-            팀의 새로운 업무 공간을 만들어 보세요.
-        </p>
-
-        <div class="form-card">
-
-            <form th:action="@{/project/create}"
-                  method="post">
-
-                <div class="form-group">
-                    <label for="title">
-                        프로젝트 이름 <span class="required">*</span>
-                    </label>
-
-                    <input type="text"
-                           id="title"
-                           name="title"
-                           maxlength="100"
-                           placeholder="예: IDI! 웹 서비스 개발"
-                           required>
+        <main class="dashboard-main project-create-main">
+            <div class="project-create-content">
+                <div class="project-create-heading">
+                    <span class="eyebrow">NEW PROJECT</span>
+                    <h1>새 프로젝트 만들기</h1>
+                    <p>팀의 새로운 업무 공간을 만들어 보세요.</p>
                 </div>
 
-                <div class="form-group">
-                    <label for="description">프로젝트 설명</label>
+                <section class="dashboard-card project-create-card">
+                    <form th:action="@{/project/create}" method="post">
+                        <div class="project-create-field">
+                            <label for="title">프로젝트 이름 <span class="project-create-required">*</span></label>
+                            <input type="text" id="title" name="title" maxlength="100"
+                                   placeholder="예: IDI! 웹 서비스 개발" required>
+                        </div>
 
-                    <textarea id="description"
-                              name="description"
-                              maxlength="500"
-                              placeholder="프로젝트의 목표와 내용을 입력하세요."></textarea>
+                        <div class="project-create-field">
+                            <label for="description">프로젝트 설명</label>
+                            <textarea id="description" name="description" maxlength="500"
+                                      placeholder="프로젝트의 목표와 내용을 입력하세요."></textarea>
+                            <p class="project-create-hint">최대 500자까지 입력할 수 있습니다.</p>
+                        </div>
 
-                    <p class="helper-text">최대 500자까지 입력할 수 있습니다.</p>
-                </div>
+                        <div class="project-create-date-row">
+                            <div class="project-create-field">
+                                <label for="startDate">시작일</label>
+                                <input type="date" id="startDate" name="startDate">
+                            </div>
+                            <div class="project-create-field">
+                                <label for="dueDate">마감일</label>
+                                <input type="date" id="dueDate" name="dueDate">
+                            </div>
+                        </div>
 
-                <div class="date-row">
+                        <p class="project-create-error" th:if="${error}" th:text="${error}"></p>
 
-                    <div class="form-group">
-                        <label for="startDate">시작일</label>
-
-                        <input type="date"
-                               id="startDate"
-                               name="startDate">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="dueDate">마감일</label>
-
-                        <input type="date"
-                               id="dueDate"
-                               name="dueDate">
-                    </div>
-
-                </div>
-
-                <p class="error"
-                   th:if="${error}"
-                   th:text="${error}"></p>
-
-                <div class="actions">
-                    <a th:href="@{/}" class="btn btn-cancel">
-                        취소
-                    </a>
-
-                    <button type="submit" class="btn btn-submit">
-                        프로젝트 생성
-                    </button>
-                </div>
-
-            </form>
-
-        </div>
-
-    </main>
-
+                        <div class="project-create-actions">
+                            <a th:href="@{/}" class="btn btn-outline">취소</a>
+                            <button type="submit" class="btn btn-primary">프로젝트 생성</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
 </body>
 </html>

@@ -3,6 +3,8 @@ package com.idii.project_idii.issue;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
+
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.idii.project_idii.project.ProjectService;
 import com.idii.project_idii.project.ProjectMemberService;
@@ -378,5 +383,82 @@ public class IssueController {
         try { return Long.parseLong(raw); }
         catch (NumberFormatException e) { return -1L; }
     }
+
+
+	@PostMapping("/status/ajax")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> changeStatusAjax(
+	        @RequestParam("issueId") long issueId,
+	        @RequestParam("status") String status,
+	        HttpSession session) {
+	
+	    Long userId = (Long) session.getAttribute("userId");
+	
+	    if (userId == null) {
+	        return ResponseEntity.status(401)
+	                .body(Map.of("success", false, "message", "로그인이 필요합니다."));
+	    }
+	
+	    if (!List.of("0", "1", "2", "3").contains(status)) {
+	        return ResponseEntity.badRequest()
+	                .body(Map.of("success", false, "message", "올바르지 않은 상태입니다."));
+	    }
+	
+	    Issue issue = issueService.getIssue(issueId, userId);
+	
+	    if (issue == null) {
+	        return ResponseEntity.status(403)
+	                .body(Map.of("success", false, "message", "이슈에 접근할 수 없습니다."));
+	    }
+	
+	    int result = issueService.updateIssueStatus(issueId, status, userId);
+	
+	    if (result != 1) {
+	        return ResponseEntity.status(403)
+	                .body(Map.of("success", false, "message", "상태를 변경할 수 없습니다."));
+	    }
+	
+	    return ResponseEntity.ok(
+	            Map.of("success", true, "status", status)
+	    );
+	}
+	
+	@PostMapping("/priority/ajax")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> changePriorityAjax(
+	        @RequestParam("issueId") long issueId,
+	        @RequestParam("priority") String priority,
+	        HttpSession session) {
+
+	    Long userId = (Long) session.getAttribute("userId");
+
+	    if (userId == null) {
+	        return ResponseEntity.status(401)
+	                .body(Map.of("success", false, "message", "로그인이 필요합니다."));
+	    }
+
+	    if (!List.of("0", "1", "2").contains(priority)) {
+	        return ResponseEntity.badRequest()
+	                .body(Map.of("success", false, "message", "올바르지 않은 우선순위입니다."));
+	    }
+
+	    Issue issue = issueService.getIssue(issueId, userId);
+
+	    if (issue == null) {
+	        return ResponseEntity.status(403)
+	                .body(Map.of("success", false, "message", "이슈에 접근할 수 없습니다."));
+	    }
+
+	    int result = issueService.updateIssuePriority(issueId, priority, userId);
+
+	    if (result != 1) {
+	        return ResponseEntity.status(403)
+	                .body(Map.of("success", false, "message", "우선순위를 변경할 수 없습니다."));
+	    }
+
+	    return ResponseEntity.ok(
+	            Map.of("success", true, "value", priority)
+	    );
+	}
 
 }
